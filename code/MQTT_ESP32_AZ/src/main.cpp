@@ -98,11 +98,11 @@ void loop() {
     value2 = my_sensor.readHumidity();      // humidity
     
 
-    // Serial.print("Temperature: ");
-    // Serial.print(value1);
-    // Serial.print(" °C / Humidity: ");
-    // Serial.print(value2);
-    // Serial.println( " %");
+    Serial.print("Temperature: ");
+    Serial.print(value1);
+    Serial.print(" °C / Humidity: ");
+    Serial.print(value2);
+    Serial.println( " %");
 
     delay(2000);
 
@@ -115,11 +115,11 @@ void loop() {
   if (now - lastMsg > 2000) {
     lastMsg = now;
     ++value;
-    snprintf (msg, MSG_BUFFER_SIZE, "value1", value1);
+    snprintf (msg, MSG_BUFFER_SIZE, "%2.2f", value1);
     Serial.print("Publish message: ");
     Serial.println(msg);
     client.publish("dhbw/team12/value1", msg);
-    snprintf (msg, MSG_BUFFER_SIZE, "value2", value2);
+    snprintf (msg, MSG_BUFFER_SIZE, "%2.2f", value2);
     Serial.print("Publish message: ");
     Serial.println(msg);
     client.publish("dhbw/team12/value2", msg);
