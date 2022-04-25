@@ -10,7 +10,7 @@ DHT my_sensor(5, DHT22);
 WiFiClient espClient;
 PubSubClient client(espClient);
 
-float temperature, humidity;
+float value1, value2;
 const char* ssid = "home-sweet-home";
 const char* password = "58413072613092673805";
 const char* mqtt_server = "81.169.194.117";
@@ -93,15 +93,16 @@ void setup() {
 }
 
 void loop() {
+    
+    value1 = my_sensor.readTemperature();   // temperature
+    value2 = my_sensor.readHumidity();      // humidity
+    
 
-    humidity = my_sensor.readHumidity();
-    temperature = my_sensor.readTemperature();
-
-    Serial.print("Temperature: ");
-    Serial.print(temperature);
-    Serial.print(" °C / Humidity: ");
-    Serial.print(humidity);
-    Serial.println( " %");
+    // Serial.print("Temperature: ");
+    // Serial.print(value1);
+    // Serial.print(" °C / Humidity: ");
+    // Serial.print(value2);
+    // Serial.println( " %");
 
     delay(2000);
 
@@ -114,11 +115,11 @@ void loop() {
   if (now - lastMsg > 2000) {
     lastMsg = now;
     ++value;
-    snprintf (msg, MSG_BUFFER_SIZE, "Temperature in °C: %2.2f", temperature);
+    snprintf (msg, MSG_BUFFER_SIZE, "value1", value1);
     Serial.print("Publish message: ");
     Serial.println(msg);
     client.publish("dhbw/team12/value1", msg);
-    snprintf (msg, MSG_BUFFER_SIZE, "Humidity in %%: %2.2f", humidity);
+    snprintf (msg, MSG_BUFFER_SIZE, "value2", value2);
     Serial.print("Publish message: ");
     Serial.println(msg);
     client.publish("dhbw/team12/value2", msg);
