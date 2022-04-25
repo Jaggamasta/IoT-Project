@@ -117,11 +117,11 @@ void loop() {
     snprintf (msg, MSG_BUFFER_SIZE, "Temperature in °C: %2.2f", temperature);
     Serial.print("Publish message: ");
     Serial.println(msg);
-    client.publish("dhbw/team12/temperature", msg);
+    client.publish("dhbw/team12/value1", msg);
     snprintf (msg, MSG_BUFFER_SIZE, "Humidity in %%: %2.2f", humidity);
     Serial.print("Publish message: ");
     Serial.println(msg);
-    client.publish("dhbw/team12/humidity", msg);
+    client.publish("dhbw/team12/value2", msg);
 
   }
 }
