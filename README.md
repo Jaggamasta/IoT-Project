@@ -1,7 +1,8 @@
 # IoT-Project
 ~~~~~~~~~~~~~~~~~ IoT Projekt DHBW ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Hier ein Paar Hinweise dazu wie wir diese Ordnerstruktur nurtzen werden.
+Hier ein Paar Hinweise dazu wie wir diese Ordnerstruktur nutzen werden.
+
 
 ===================== Ordner code ======================================
 
