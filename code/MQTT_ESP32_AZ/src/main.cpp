@@ -6,7 +6,7 @@
 #include <SPI.h>
 #include <Adafruit_Sensor.h>
 
-DHT my_sensor(5, DHT22);
+DHT my_sensor(17, DHT22);
 WiFiClient espClient;
 PubSubClient client(espClient);
 
