@@ -17,7 +17,7 @@ const char* mqtt_server = "81.169.194.117";
 unsigned long lastMsg = 0;
 #define MSG_BUFFER_SIZE	(50)
 char msg[MSG_BUFFER_SIZE];
-int value = 0;
+//int value = 0;
 
 void setup_wifi() {
 
@@ -111,18 +111,20 @@ void loop() {
   }
   client.loop();
 
-  unsigned long now = millis();
-  if (now - lastMsg > 2000) {
-    lastMsg = now;
-    ++value;
-    snprintf (msg, MSG_BUFFER_SIZE, "%2.2f", value1);
-    Serial.print("Publish message: ");
-    Serial.println(msg);
-    client.publish("dhbw/team12/value1", msg);
-    snprintf (msg, MSG_BUFFER_SIZE, "%2.2f", value2);
-    Serial.print("Publish message: ");
-    Serial.println(msg);
-    client.publish("dhbw/team12/value2", msg);
+  //unsigned long now = millis();
+  //if (now - lastMsg > 2000) {
+  //  lastMsg = now;
+  //  ++value;
+    //snprintf (msg, MSG_BUFFER_SIZE, "%2.2f", value1);
+    //Serial.print("Publish message: ");
+    //Serial.println(msg);
+    client.publish("dhbw/team12/value1", String(value1).c_str(), true); // statt msg true
+    //snprintf (msg, MSG_BUFFER_SIZE, "%2.2f", value2);
+    //Serial.print("Publish message: ");
+    //Serial.println(msg);
+    client.publish("dhbw/team12/value2", String(value2).c_str(), true); // statt msg true
+    
 
-  }
+    delay(2000);
+ // }
 }
