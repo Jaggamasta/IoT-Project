@@ -12,6 +12,11 @@
 #define BLYNK_DEVICE_NAME "IoTProjectTeam12"                    // enter your device name from blynk console cloud
 #define BLYNK_AUTH_TOKEN "yJBOd-8062LDX76ddXkBCJUWL5nEZYoH"     // enter your auth token from the blynk console cloud
 
+//#define BLYNK_TEMPLATE_ID "TMPLyAyPxcki"                      // ID from Davids blynk project
+//#define BLYNK_DEVICE_NAME "Template01"                        // Name from Davids blynk project
+//#define BLYNK_AUTH_TOKEN "OWErakJ76NEjc2APznUTV3FPQEjEx-OC"   // Token from Davis blynk project
+
+
 #define BLYNK_PRINT Serial              // Coomment this out to disable prints and save space
 
 // You schould get Auth Token in the Blynk App
@@ -19,8 +24,8 @@
 const char* auth = BLYNK_AUTH_TOKEN;          // blynk auth token from the blynk app
 // Your WiFi credentials
 // Set password to "" open networks
-const char* ssid = "home-sweet-home";        // your network name
-const char* pass = "58413072613092673805";   // your wifi password
+const char* ssid = "home-sweet-home";        // your network name  "Eigenes WLAN haben du musst"
+const char* pass = "58413072613092673805";   // your wifi password  "00000000"
 
 int pump = 15;
 
