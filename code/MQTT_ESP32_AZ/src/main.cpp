@@ -22,6 +22,7 @@ const char* auth = BLYNK_AUTH_TOKEN;          // blynk auth token from the blynk
 const char* ssid = "home-sweet-home";        // your network name
 const char* pass = "58413072613092673805";   // your wifi password
 
+int pump = 15;
 
 DHT my_sensor(17, DHT22);
 WiFiClient espClient;
@@ -131,10 +132,19 @@ void setup() {
     client.setCallback(callback);
     Blynk.begin(auth, ssid, pass, "blynk.cloud", 80);      // Blynk.begin(auth, ssid, pass, IPAdress(192.168.1.100), 8080)
     timer.setInterval(1000L, myTimerEvent);     // setup a unction to be calles every second
-
+    pinMode(pump, OUTPUT);
 }
 
 void loop() {
+    
+
+    if(value1 >= 25){
+
+        digitalWrite(pump, LOW);    
+    }
+    else{
+        digitalWrite(pump, HIGH);
+    }
     
     Serial.print("Temperature: ");
     Serial.print(value1);
@@ -144,6 +154,8 @@ void loop() {
 
     value1 = my_sensor.readTemperature();   // temperature
     value2 = my_sensor.readHumidity();      // humidity
+
+    
 
     Blynk.run();
     timer.run();
