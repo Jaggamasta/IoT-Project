@@ -7,6 +7,7 @@
 #include <Adafruit_Sensor.h>
 #include <WiFiClient.h>
 #include <BlynkSimpleEsp32.h>
+#include <LiquidCrystal_I2C.h>
 
 #define BLYNK_TEMPLATE_ID "TMPLSVGc8NTw"                        // enter the correct ID from your template from blynk console cloud 
 #define BLYNK_DEVICE_NAME "IoTProjectTeam12"                    // enter your device name from blynk console cloud
@@ -15,7 +16,6 @@
 //#define BLYNK_TEMPLATE_ID "TMPLyAyPxcki"                      // ID from Davids blynk project
 //#define BLYNK_DEVICE_NAME "Template01"                        // Name from Davids blynk project
 //#define BLYNK_AUTH_TOKEN "OWErakJ76NEjc2APznUTV3FPQEjEx-OC"   // Token from Davis blynk project
-
 
 #define BLYNK_PRINT Serial              // Coomment this out to disable prints and save space
 
@@ -28,7 +28,9 @@ const char* ssid = "home-sweet-home";        // your network name  "Eigenes WLAN
 const char* pass = "58413072613092673805";   // your wifi password  "00000000"
 
 int pump = 15;
+int alarm_led = 16;     // pin for the temperature alarm signal led
 
+LiquidCrystal_I2C lcd(0x27, 16, 2);
 DHT my_sensor(17, DHT22);
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -126,9 +128,11 @@ void myTimerEvent(){
 
 void setup() {
 
-    //pinMode(LED_BUILTIN, OUTPUT);     // Initialize the BUILTIN_LED pin as an output
+    pinMode(alarm_led, OUTPUT);     // Initialize the BUILTIN_LED pin as an output
     Serial.begin(9600);
     my_sensor.begin();
+    lcd.init();         // starting LCD setup  
+    lcd.backlight();    // turn on backlight (lcd.noBacklight(); turn off backlight).
     setup_wifi();
     String clientId = "ESP8266Client-";
     clientId += String(random(0xffff), HEX);
@@ -143,12 +147,34 @@ void setup() {
 void loop() {
     
 
+    value1 = my_sensor.readTemperature();   // temperature
+    value2 = my_sensor.readHumidity();      // humidity
+
+
     if(value1 >= 25){
 
-        digitalWrite(pump, LOW);    
+        lcd.clear(); 
+        lcd.setCursor(0, 0);// position 0:0, the first column and row 
+        lcd.print("Temp. too HIGH!"); 
+        lcd.setCursor(0, 1);// In diesem Fall bedeutet (0,1) das erste Zeichen in der zweiten Zeile. 
+        lcd.print("Cooling NOW!"); 
+                
+        digitalWrite(pump, LOW);
+        digitalWrite(alarm_led, HIGH);
+        delay(1000);
+        digitalWrite(alarm_led, LOW);    
+
     }
     else{
+        
+        lcd.clear();
+        lcd.setCursor(0, 0);// position 0:0, the first column and row 
+        lcd.print("Temp. OK"); 
+        lcd.setCursor(0, 1);// In diesem Fall bedeutet (0,1) das erste Zeichen in der zweiten Zeile. 
+        lcd.print("no need cooling "); 
         digitalWrite(pump, HIGH);
+        digitalWrite(alarm_led, LOW);
+
     }
     
     Serial.print("Temperature: ");
@@ -156,11 +182,6 @@ void loop() {
     Serial.print(" °C / Humidity: ");
     Serial.print(value2);
     Serial.println( " %");
-
-    value1 = my_sensor.readTemperature();   // temperature
-    value2 = my_sensor.readHumidity();      // humidity
-
-    
 
     Blynk.run();
     timer.run();
