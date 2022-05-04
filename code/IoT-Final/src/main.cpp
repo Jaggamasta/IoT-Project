@@ -39,6 +39,7 @@ WiFiClient espClient;
 PubSubClient client(espClient);
 
 float value1, value2;  // value1 = Temperatur, value2 = Humidity, value3 = Fluid Level
+float value3 = 0;
 
 BlynkTimer timer;
 
@@ -127,6 +128,7 @@ void myTimerEvent(){
     // please don't send more than 10 values per second.
     Blynk.virtualWrite(V0, value1);
     Blynk.virtualWrite(V1, value2);
+    Blynk.virtualWrite(V2, value3);
 }
 
 void setup() {
@@ -155,7 +157,7 @@ void loop() {
     value1 = my_sensor.readTemperature();   // temperature
     value2 = my_sensor.readHumidity();      // humidity
 
-    float t = 0, h = 0, value3 = 0;
+    float t = 0, h = 0;
   
     // Transmitting pulse
     digitalWrite(trig, LOW);
