@@ -35,7 +35,7 @@ DHT my_sensor(17, DHT22);
 WiFiClient espClient;
 PubSubClient client(espClient);
 
-float value1, value2;
+float value1, value2;  // value1 = Temperatur, value2 = Humidity, value3 = Fluid Level
 
 BlynkTimer timer;
 

@@ -15,8 +15,8 @@ void setup () {
 void loop () {
     // Every 500 miliseconds, do a measurement using the sensor and print the distance in centimeters.
     distance = distanceSensor.measureDistanceCm();
-    ml = distance*0.02;
-    Serial.println(ml);
+   // ml = distance*0.02;
+    Serial.println(distance);
     
     //Serial.print(" in cm");
     delay(1000);
