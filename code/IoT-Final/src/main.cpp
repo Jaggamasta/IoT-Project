@@ -24,8 +24,8 @@
 const char* auth = BLYNK_AUTH_TOKEN;          // blynk auth token from the blynk app
 // Your WiFi credentials
 // Set password to "" open networks
-const char* ssid = "home-sweet-home";        // your network name  "Eigenes WLAN haben du musst"
-const char* pass = "58413072613092673805";   // your wifi password  "00000000"
+const char* ssid = "Eigenes WLAN haben du musst" ;        // your network name  "home-sweet-home"
+const char* pass =    "00000000"; // your wifi password   "58413072613092673805";
 
 int trig = 13;
 int echo = 12;
