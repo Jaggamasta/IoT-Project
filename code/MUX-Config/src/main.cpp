@@ -2,8 +2,12 @@
 #include <CD74HC4067.h>
 //16-Channel MUX (74HC4067) Interface
 //===================================
-int Signal = 5; int i; int SW = 4;
-int pot = A0; int potVal; int S[4] = {9,8,7,6};
+int Signal = 27; 
+int i; 
+int SW = 4;
+void selection(int j);
+//int pot = A0; int potVal; 
+int S[4] = {26, 25, 33, 32};
 int MUXtable[16][4]=
 {
   {0,0,0,0}, {1,0,0,0}, {0,1,0,0}, {1,1,0,0},
@@ -15,7 +19,8 @@ int MUXtable[16][4]=
 void setup()
 {
   pinMode(Signal,OUTPUT);
-  for(i=0; i<4; i++) pinMode(S[i],OUTPUT);
+  for(i=0; i<4; i++) 
+  pinMode(S[i],OUTPUT);
 }
 //=================================================
 void loop()
@@ -23,10 +28,12 @@ void loop()
   for(i=0; i<10; i++)
   {
     selection(i);
-    potVal = map(analogRead(pot),0,1023,20,400);
+    //potVal = map(analogRead(pot),0,1023,20,400);
     if(digitalRead(SW)==HIGH) break;
-    digitalWrite(Signal,HIGH); delay(potVal);
-    digitalWrite(Signal,LOW); delay(potVal);
+    digitalWrite(Signal,HIGH); 
+    delay(1000);
+    digitalWrite(Signal,LOW); 
+    delay(1000);
   }
 }
 //=================================================
