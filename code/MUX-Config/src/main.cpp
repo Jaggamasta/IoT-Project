@@ -1,23 +1,39 @@
 #include <Arduino.h>
 #include <CD74HC4067.h>
-
-               // s0 s1 s2 s3
-CD74HC4067 my_mux(12, 14, 26, 25);  // create a new CD74HC4067 object with its four control pins
-
-const int g_common_pin = 33; // select a pin to share with the 16 channels of the CD74HC4067
-
+//16-Channel MUX (74HC4067) Interface
+//===================================
+int Signal = 5; int i; int SW = 4;
+int pot = A0; int potVal; int S[4] = {9,8,7,6};
+int MUXtable[16][4]=
+{
+  {0,0,0,0}, {1,0,0,0}, {0,1,0,0}, {1,1,0,0},
+  {0,0,1,0}, {1,0,1,0}, {0,1,1,0}, {1,1,1,0},
+  {0,0,0,1}, {1,0,0,1}, {0,1,0,1}, {1,1,0,1},
+  {0,0,1,1}, {1,0,1,1}, {0,1,1,1}, {1,1,1,1}
+};
+//=================================================
 void setup()
 {
-    pinMode(g_common_pin, OUTPUT); // set the initial mode of the common pin.
-	                               // This can be changed in loop() for for each channel.
+  pinMode(Signal,OUTPUT);
+  for(i=0; i<4; i++) pinMode(S[i],OUTPUT);
 }
-
+//=================================================
 void loop()
 {
-    digitalWrite(g_common_pin, HIGH);
-
-    for (int i = 0; i < 10; i++) {
-        my_mux.channel(i);
-        delay(1000);
-    }
+  for(i=0; i<10; i++)
+  {
+    selection(i);
+    potVal = map(analogRead(pot),0,1023,20,400);
+    if(digitalRead(SW)==HIGH) break;
+    digitalWrite(Signal,HIGH); delay(potVal);
+    digitalWrite(Signal,LOW); delay(potVal);
+  }
+}
+//=================================================
+void selection(int j)
+{
+  digitalWrite(S[0], MUXtable[j][0]);
+  digitalWrite(S[1], MUXtable[j][1]);
+  digitalWrite(S[2], MUXtable[j][2]);
+  digitalWrite(S[3], MUXtable[j][3]);
 }
