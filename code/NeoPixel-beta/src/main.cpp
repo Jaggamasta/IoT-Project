@@ -8,7 +8,7 @@
 #define PIN        12 // On Trinket or Gemma, suggest changing this to 1
 
 // How many NeoPixels are attached to the Arduino?
-#define NUMPIXELS 30 // Popular NeoPixel ring size
+#define NUMPIXELS 60 // Popular NeoPixel ring size
 
 // When setting up the NeoPixel library, we tell it how many pixels,
 // and which pin to use to send signals. Note that for older NeoPixel
@@ -30,7 +30,8 @@ void setup() {
 }
 
 void loop() {
-  pixels.clear(); // Set all pixel colors to 'off'
+  //pixels.clear(); // Set all pixel colors to 'off'
+
 /*
   // The first NeoPixel in a strand is #0, second is 1, all the way up
   // to the count of pixels minus one.
@@ -46,15 +47,45 @@ void loop() {
   }
 
 */
-    pixels.setPixelColor(21, pixels.Color(150, 0, 0));
+    pixels.clear();
+    delay(DELAYVAL);
+    pixels.setPixelColor(0, pixels.Color(150, 0, 150));
+    pixels.show();  
+    delay(DELAYVAL); 
+    pixels.setPixelColor(1, pixels.Color(150, 0, 150));
+    pixels.show();  
+    delay(DELAYVAL);  
+    pixels.setPixelColor(2, pixels.Color(150, 0, 150));
+    pixels.show();  
+    delay(DELAYVAL);  
+    pixels.setPixelColor(3, pixels.Color(150, 0, 150));
     pixels.show();  
     delay(DELAYVAL);
-    pixels.clear();   
-    pixels.setPixelColor(25, pixels.Color(0, 150, 0));
-    pixels.show();
+    pixels.setPixelColor(4, pixels.Color(150, 0, 150));
+    pixels.show();  
+    delay(DELAYVAL);   
+    pixels.setPixelColor(5, pixels.Color(150, 0, 150));
+    pixels.show();  
     delay(DELAYVAL);
-    pixels.clear();     
-    pixels.setPixelColor(29, pixels.Color(0, 0, 150));
+    pixels.setPixelColor(6, pixels.Color(150, 0, 150));
+    pixels.show();  
+    delay(DELAYVAL);  
+    pixels.setPixelColor(7, pixels.Color(150, 0, 150));
+    pixels.show();  
+    delay(DELAYVAL);  
+    pixels.setPixelColor(8, pixels.Color(150, 0, 150));
+    pixels.show();
+    delay(DELAYVAL);     
+    pixels.setPixelColor(9, pixels.Color(150, 0, 150));
+    pixels.show();
+    delay(DELAYVAL); 
+    pixels.setPixelColor(15, pixels.Color(0, 150, 150));
+    pixels.show();
+    delay(DELAYVAL); 
+    pixels.setPixelColor(16, pixels.Color(0, 150, 150));
+    pixels.show();
+    delay(DELAYVAL); 
+    pixels.setPixelColor(17, pixels.Color(0, 150, 150));
     pixels.show();
     delay(DELAYVAL); 
     pixels.clear();
