@@ -57,7 +57,7 @@ void loop() {
     pixels.setPixelColor(29, pixels.Color(0, 0, 150));
     pixels.show();
     delay(DELAYVAL); 
-    pixels.clear();  // Send the updated pixel colors to the hardware.
-    delay(DELAYVAL); // Pause before next pass through loop
+    pixels.clear();
+    
     
 }
