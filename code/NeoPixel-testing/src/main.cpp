@@ -8,10 +8,10 @@
 
 // Which pin on the Arduino is connected to the NeoPixels?
 // On a Trinket or Gemma we suggest changing this to 1:
-#define LED_PIN     12
+#define LED_PIN     2
 
 // How many NeoPixels are attached to the Arduino?
-#define LED_COUNT  20
+#define LED_COUNT  15
 
 // NeoPixel brightness, 0 (min) to 255 (max)
 #define BRIGHTNESS 10 // Set BRIGHTNESS to about 1/5 (max = 255)
