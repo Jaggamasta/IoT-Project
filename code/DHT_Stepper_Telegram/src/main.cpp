@@ -1,10 +1,29 @@
+#include <Stepper.h>
+
+#include <Arduino.h>
+
 #include <WiFiClientSecure.h>
+
 #include <UniversalTelegramBot.h>
+
 #include "DHT.h"
+
 #define DHTPIN 4
+
 #define DHTTYPE DHT22   // DHT 11
 
+#define CHAT_ID "5322404568" 
 DHT dht(DHTPIN, DHTTYPE);
+
+const int SPU = 2048;
+#define IN1 32
+#define IN2 33
+#define IN3 25
+#define IN4 26
+#define DHTpin 4 //D15 of ESP32 DevKit
+Stepper Motor(SPU, IN1, IN3, IN2, IN4); 
+void moving(int angle);
+int position = 0;
 
 // Initialize Wifi connection to the router
 
@@ -25,7 +44,7 @@ UniversalTelegramBot bot(BOTtoken, client);
 int botRequestDelay = 1000;
 
 unsigned long lastTimeBotRan;
-
+/*
 void handleNewMessages(int numNewMessages) {
 
 Serial.println("handleNewMessages");
@@ -41,7 +60,6 @@ String text = bot.messages[i].text;
 String from_name = bot.messages[i].from_name;
 
 if (from_name == "") from_name = "Guest";
-
 if (text == "/temperature") {
 
 int t = dht.readTemperature();
@@ -55,6 +73,8 @@ temp +=" *C\n";
 bot.sendMessage(chat_id,temp, "");
 
 }
+
+
 
 if (text == "/humidity") {
 
@@ -80,15 +100,25 @@ welcome += "/humidity : Humiditiy reading\n";
 
 bot.sendMessage(chat_id, welcome, "Markdown");
 
+
 }
+
+
 
 }
 
 }
-
+*/
 void setup() {
 
+
+Motor.setSpeed(15);
 Serial.begin(9600);
+Serial.println();
+Serial.println("Status\tHumidity (%)\tTemperature (C)\t(F)\tHeatIndex (C)\t(F)");
+
+
+
 
 dht.begin();
 
@@ -140,10 +170,39 @@ Serial.println(WiFi.localIP());
 
 void loop() {
 
+
+//Motor.step(SPU);
+moving(-270);
+delay(10000);
+//Motor.step(-SPU);
+moving(90); //Arbeitsposition
+delay(5000);
+    
 int t = dht.readTemperature();
 
 int h = dht.readHumidity();
 
+float temperature = dht.readTemperature();
+if (temperature  > 25) {
+
+int t = dht.readTemperature();
+String temp = "Digga mir ist warm, mach mal Klima an: ";
+
+temp += int(t);
+
+temp +=" *C\n";
+
+bot.sendMessage(CHAT_ID,temp, "");
+delay(5000);
+moving(90); //Arbeitsposition
+delay(5000);
+moving(-90); //Arbeitsposition
+delay(5000);
+
+}
+moving(180);
+delay(2000);
+/*
 if (millis() > lastTimeBotRan + botRequestDelay)  {
 
 int numNewMessages = bot.getUpdates(bot.last_message_received + 1);
@@ -156,10 +215,19 @@ handleNewMessages(numNewMessages);
 
 numNewMessages = bot.getUpdates(bot.last_message_received + 1);
 
+
 }
+
+
+}
+*/
+
 
 lastTimeBotRan = millis();
 
 }
+void moving(int angle){
+    position = position + angle;
+    Motor.step(angle/0.18);         // 360/2048= 0.18
 
 }
