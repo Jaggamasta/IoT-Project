@@ -6,7 +6,7 @@
 #include <SPI.h>
 #include <Adafruit_Sensor.h>
 #include <WiFiClient.h>
-#include <BlynkSimpleEsp32.h>
+//#include <BlynkSimpleEsp32.h>
 #include <LiquidCrystal_I2C.h>
 
 #define BLYNK_TEMPLATE_ID "TMPLSVGc8NTw"                        // enter the correct ID from your template from blynk console cloud 
@@ -41,7 +41,7 @@ PubSubClient client(espClient);
 float value1, value2;  // value1 = Temperatur, value2 = Humidity, value3 = Fluid Level
 float value3 = 0;
 
-BlynkTimer timer;
+//BlynkTimer timer;
 
 //const char* ssid = "home-sweet-home";
 //const char* password = "58413072613092673805";

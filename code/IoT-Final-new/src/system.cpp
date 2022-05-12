@@ -3,6 +3,7 @@
 #include "WiFiClient.h"
 #include "config.h"
 #include <Arduino.h>
+#include <BlynkSimpleEsp32.h>
 
 /**
  * General System super-loop
@@ -11,28 +12,58 @@
 void IoTSystem::loop() {
     // <-- USER CODE GOES HERE -->
     
+    read_dht();
+    read_fluid_lvl();
+
+     if (temperature >= 25) { 
+        digitalWrite(PUMP, LOW);
+        digitalWrite(ALARM_LED, HIGH);
+        delay(500);
+        digitalWrite(ALARM_LED, LOW);    
+    } else {
+        digitalWrite(PUMP, HIGH);
+        digitalWrite(ALARM_LED, LOW);
+    }
+
+    if (!client.connected()) {
+        reconnect();
+    }
+
+    if(millis() - last_sent >= 2000) {
+        lcd.clear();
+        lcd.setCursor(0, 0);
+        lcd.print((temperature >= 25) ? "Temp. too HIGH!" : "Temp. Ok");
+        lcd.setCursor(0, 1);
+        lcd.print((temperature >= 25) ? "Cooling NOW!" : "No need Cooling");
+        verbose_values();
+        publish_data();
+        blynk_send_data();
+        last_sent = millis();
+    }
+
+    client.loop();
+    delay(100);    
 }
 
 IoTSystem::IoTSystem(
-        char *_ssid,
-        char *_pwd,
-        char *_blynk_auth,
-        LiquidCrystal_I2C lcd,
-        DHT dht,
-        WiFiClient espClient,
-        PubSubClient client
+    char *_ssid,
+    char *_pwd,
+    char *_blynk_auth
 ) :
     _ssid(_ssid),
     _pwd(_pwd),
     _blynk_auth((char *) _blynk_auth),
-    lcd(lcd),
-    my_sensor(dht),
-    espClient(espClient),
-    client(client)
+    lcd(LiquidCrystal_I2C(LCD_ADDR, LCD_COLS, LCD_ROWS)), 
+    dht(DHT(DHT_DATA_PIN, DHT22)),
+    esp_client(WiFiClient()),
+    client(PubSubClient(esp_client))
 {
     // "Normal" constructor
-}
+    this->temperature = 0;
+    this-> humidity = 0;
+    this->fluid_level = 0;
 
+}
 
 /**
  * Setup wifi with SSID and Password
@@ -52,19 +83,24 @@ void IoTSystem::setup_wifi() {
         delay(500);
         Serial.print(".");
     }
-
-    
     Serial.println("");
     Serial.println("WiFi connected");
     Serial.println("IP address: ");
     Serial.println(WiFi.localIP());
+    delay(1000);
 }
+
 
 /**
  * Setup necessary pins for System
  */
 void IoTSystem::setup_pins() {
+    
     // Pin setup code
+    pinMode(ALARM_LED, OUTPUT);
+    pinMode(TRIG, OUTPUT);
+    pinMode(ECHO, INPUT);
+    pinMode(PUMP, OUTPUT); 
 }
 
 /**
@@ -72,7 +108,8 @@ void IoTSystem::setup_pins() {
  */
 void IoTSystem::setup_lcd() {
     // LCD setup code
-    lcd = LiquidCrystal_I2C(0x27, 16, 2);
+    lcd.init();         // starting LCD setup  
+    lcd.backlight();    // turn on backlight (lcd.noBacklight(); turn off backlight).
 }
 
 /**
@@ -80,10 +117,13 @@ void IoTSystem::setup_lcd() {
  */
 void IoTSystem::setup_blynk() {
     // Blynk setup code
+    Blynk.begin(AUTH, SSID, PASS, BLYNK_IP, BLYNK_PORT);      // Blynk.begin(auth, ssid, pass, IPAdress(192.168.1.100), 8080)
+    //timer.setInterval(1000L, myTimerEvent);     // setup a unction to be calles every second
+
 }
 
 void IoTSystem::setup_sensors() {
-    my_sensor = DHT(17, DHT22);
+    dht.begin();
 }
 
 /**
@@ -91,7 +131,78 @@ void IoTSystem::setup_sensors() {
  */
 void IoTSystem::setup_mqtt() {
     // MQTT setup code
-    client = PubSubClient(espClient);
+    String clientId = "ESP8266Client-";
+    clientId += String(random(0xffff), HEX);
+    client.setServer(MQTT_SERVER, MQTT_PORT);
+    client.connect(clientId.c_str(), "student", "iotproject2§&d");
+    //client.setCallback(this->callback);
+}
+
+void IoTSystem::reconnect() {
+  // Loop until we're reconnected
+  while (!client.connected()) {
+    Serial.print("Attempting MQTT connection...");
+    // Create a random client ID
+    String clientId = "ESP8266Client-";
+    clientId += String(random(0xffff), HEX);
+    // Attempt to connect
+    if (client.connect(clientId.c_str(), "student", "iotproject2§&d")) {
+      Serial.println("connected");
+      // Once connected, publish an announcement...
+      client.publish("outTopic", "hello world");
+      // ... and resubscribe
+      client.subscribe("inTopic");
+    } else {
+      Serial.print("failed, rc=");
+      Serial.print(client.state());
+      Serial.println(" try again in 5 seconds");
+      // Wait 5 seconds before retrying
+      delay(5000);
+    }
+  }
+}
+
+void IoTSystem::read_dht() {
+    this->temperature = dht.readTemperature();
+    this->humidity = dht.readHumidity();
+}
+
+void IoTSystem::read_fluid_lvl() {
+
+    float t = 0, h = 0;
+    // Transmitting pulse
+    digitalWrite(TRIG, LOW);
+    delayMicroseconds(2);
+    digitalWrite(TRIG, HIGH);
+    delayMicroseconds(10);
+    digitalWrite(TRIG, LOW);
+  
+    // Waiting for pulse
+    t = pulseIn(ECHO, HIGH);
+    // Calculating distance 
+    h = t / 14;
+    h = h - 3.5;  // offset correction
+    h = 57 - h;  // water height, 0 - 14.5 cm
+    this->fluid_level = 2 * h;  // distance in %, 0-100 %
+
+}
+
+void IoTSystem::verbose_values() {
+    Serial.printf(
+        "Temperature: %2.2f °C | "
+        "Humidity: %2.2f %% | "
+        "Fluid Level: %2.2f %%\n", 
+        temperature, 
+        humidity, 
+        fluid_level
+    );
+    
+}
+
+void IoTSystem::blynk_send_data() {
+    Blynk.virtualWrite(V0, temperature);
+    Blynk.virtualWrite(V1, humidity);
+    Blynk.virtualWrite(V2, fluid_level);
 }
 
 /**
@@ -134,7 +245,6 @@ float IoTSystem::get_humidity() {
 float IoTSystem::get_fluid_level() {
     return this->fluid_level;
 }
-
 
 void IoTSystem::rfid_read() {
 

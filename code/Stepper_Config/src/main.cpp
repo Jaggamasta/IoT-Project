@@ -7,8 +7,6 @@ const int SPU = 2048;
 #define IN3 25
 #define IN4 26
 
-int dei_mudda = 1;
-
 int position = 0;
 
 Stepper Motor(SPU, IN1, IN3, IN2, IN4); 

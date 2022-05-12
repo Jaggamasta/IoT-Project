@@ -51,18 +51,24 @@ private:
 
     /* Cooling fluid level */
     float fluid_level;
-    
-    LiquidCrystal_I2C lcd;
-    DHT my_sensor;
-    WiFiClient espClient;
-    PubSubClient client;
 
+    LiquidCrystal_I2C lcd;
+    DHT dht;
+    WiFiClient esp_client;
+    PubSubClient client;
+   //BlynkTimer blynk_timer;
+    
+
+    int last_sent, lcd_last;
 
     void start_cooling();
     void stop_cooling();
 
+    void read_dht();
+    void read_fluid_lvl();
+    void verbose_values();
     void stepper_move_angle(float angle);
-
+   
 
     /*----------------------| Getter |-----------------------*/
     String get_ssid();
@@ -75,7 +81,9 @@ private:
     /*------------| WiFi/MQTT/Blynk operations |-------------*/
     void publish_data();
     void publish_data(float value1, float value2, float value3);
-
+    void reconnect();
+    void blynk_send_data();
+    //void callback(char* topic, byte* payload, unsigned int length);
 
     /*----------------| Stepper operations |-----------------*/
     void move_to(Operation op);
@@ -91,11 +99,7 @@ public:
     IoTSystem(
             char *ssid,
             char *pwd,
-            char *blynk_auth,
-            LiquidCrystal_I2C lcd,
-            DHT dht,
-            WiFiClient espClient,
-            PubSubClient client    
+            char *blynk_auth
     );
     ~IoTSystem() {}
 
