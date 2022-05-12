@@ -14,25 +14,25 @@
 // ------------ | WiFi credentials | --------------
 // Set password to "" open networks
 // your network name  
-#define SSID "home-sweet-home"  // "Eigenes WLAN haben du musst" for hotspot
+#define SSID            "home-sweet-home"  // "Eigenes WLAN haben du musst" for hotspot
 // your wifi password   
-#define PASS "58413072613092673805" // "00000000" for hotspot
+#define PASS            "58413072613092673805" // "00000000" for hotspot
 // DHBW MQTT server IP-adress
-#define MQTT_SERVER "81.169.194.117"
+#define MQTT_SERVER     "81.169.194.117"
 #define MQTT_PORT       1883
 
 // ----------------| BLYNK |----------------
 
 // Comment this out to disable prints and save space
-#define BLYNK_PRINT Serial
+#define BLYNK_PRINT         Serial
 // enter the correct ID from your template from blynk console cloud 
-#define BLYNK_TEMPLATE_ID "TMPLSVGc8NTw"    
+#define BLYNK_TEMPLATE_ID   "TMPLSVGc8NTw"    
 // enter your device name from blynk console cloud
-#define BLYNK_DEVICE_NAME "IoTProjectTeam12"  
+#define BLYNK_DEVICE_NAME   "IoTProjectTeam12"  
 // enter your auth token from the blynk console cloud                 
-#define BLYNK_AUTH_TOKEN "yJBOd-8062LDX76ddXkBCJUWL5nEZYoH" 
+#define BLYNK_AUTH_TOKEN    "yJBOd-8062LDX76ddXkBCJUWL5nEZYoH" 
 // blynk auth token from the blynk app    
-#define AUTH BLYNK_AUTH_TOKEN          
+#define AUTH                BLYNK_AUTH_TOKEN          
 
 //#define BLYNK_TEMPLATE_ID "TMPLyAyPxcki"                      // ID from Davids blynk project
 //#define BLYNK_DEVICE_NAME "Template01"                        // Name from Davids blynk project
