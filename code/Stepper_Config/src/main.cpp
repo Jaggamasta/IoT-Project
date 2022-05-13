@@ -1,51 +1,15 @@
 #include <Arduino.h>
-#include <Stepper.h>
-
-const int SPU = 2048;
-#define IN1 32
-#define IN2 33
-#define IN3 25
-#define IN4 26
-
-int position = 0;
-
-Stepper Motor(SPU, IN1, IN3, IN2, IN4); 
-
-void moving(int angle);
+#include "setup.h"
+#include "config.h"
 
 void setup() {
-    Motor.setSpeed(5);
-
+    
+    speed_setup();
 }
 
 void loop() {
-    //Motor.step(SPU);
-    moving(-210);
-    delay(2000);
-    //Motor.step(-SPU);
-    moving(100);
-    delay(5000);
-    moving(-100);
-    delay(2000);
-    moving(20);
-    delay(2000);
-    moving(80);
-    delay(5000);
-    moving(-80);
-    delay(2000);
-    moving(20);
-    delay(2000);
-    moving(60);
-    delay(5000);
-    moving(-60);
-    delay(2000);
-    moving(170);
-    delay(2000);
 
-}
-
-void moving(int angle){
-    position = position + angle;
-    Motor.step(angle/0.18);         // 360/2048= 0.18
-
+    //motor_prog_1();
+    //motor_prog_2();
+    motor_prog_3();
 }
