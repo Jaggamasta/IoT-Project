@@ -3,9 +3,7 @@
 #include "config.h"
 #include "setup.h"
 
-
-
-
+/* == | Declaration of the Motor Class | == */
 Stepper Motor(
     SPU, 
     IN1, 
@@ -20,10 +18,14 @@ void speed_setup() {
     Motor.setSpeed(5);
 }
 
-void moving(int ANGLE) {
-    Motor.step(ANGLE/0.18);         // 360 degrees /2048 steps = 0.18 factor per degree
-}
 
+/*
+Setting up the anlge function
+360 degrees /2048 steps = 0.18 factor per degree
+*/
+void moving(int ANGLE) {
+    Motor.step(ANGLE/0.18);         
+}
 
 /* 
 Motor programm 1
