@@ -10,6 +10,8 @@
 #include <WiFiClient.h>
 //#include <BlynkSimpleEsp32.h>
 #include <LiquidCrystal_I2C.h>
+#include <Adafruit_NeoPixel.h>
+
 
 // ------------ | WiFi credentials | --------------
 // Set password to "" open networks
@@ -44,7 +46,8 @@
 #define ECHO            12 // ultrasonic echo
 #define PUMP            15 // relais & pump
 #define ALARM_LED       16 // red alarm led & piezo
-
+// Which pin on the Board is connected to the NeoPixels?
+#define STRIP_PIN       2
 // LCD 
 
 #define LCD_COLS            16
@@ -60,6 +63,16 @@
 
 #define BLYNK_IP            "blynk.cloud"
 #define BLYNK_PORT          80
+
+
+// ------------- | NeoPixel RGB strip | -----------------
+
+// How many NeoPixels are attached?
+#define NUMPIXELS           20
+// Time (in milliseconds) to pause between pixels
+#define RGB_DELAY           5000 
+// definition of the brightness level 0-50
+#define BRIGHTNESS          30
 
 
 // --------------| Sensor Values |--------------

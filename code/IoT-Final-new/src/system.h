@@ -11,6 +11,7 @@
 #include <WiFiClient.h>
 //#include <BlynkSimpleEsp32.h>
 #include <LiquidCrystal_I2C.h>
+#include <Adafruit_NeoPixel.h>
 
 /**
  * Operation area of the system
@@ -56,6 +57,7 @@ private:
     DHT dht;
     WiFiClient esp_client;
     PubSubClient client;
+    Adafruit_NeoPixel pixels;
    //BlynkTimer blynk_timer;
     
 
@@ -67,7 +69,13 @@ private:
     void read_dht();
     void read_fluid_lvl();
     void verbose_values();
-    void stepper_move_angle(float angle);
+    //void stepper_move_angle(float angle);
+
+    /* =========== | Alarm lights | ============ */
+    void setup_blinking_rgb();
+    /* ==== | warehouse & changer lights | ===== */
+    void setup_rgb_lights();
+
    
 
     /*----------------------| Getter |-----------------------*/
@@ -111,6 +119,10 @@ public:
     void setup_blynk();
     void setup_lcd();
     void setup_sensors();
+
+    /* ------------ | Setup NeoPixel RGB Strip | ----------- */
+    void setup_neopixel();
+
 
     /*--------------------| Super loop |---------------------*/
     void loop();

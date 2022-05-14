@@ -18,11 +18,20 @@ void IoTSystem::loop() {
      if (temperature >= 25) { 
         digitalWrite(PUMP, LOW);
         digitalWrite(ALARM_LED, HIGH);
+        pixels.fill(pixels.Color(255, 0, 0), 0, 10);
+        pixels.setPixelColor(14, pixels.Color(255, 0, 0));
+        pixels.setPixelColor(16, pixels.Color(255, 0, 0));
+        pixels.setPixelColor(18, pixels.Color(255, 0, 0));
+        pixels.show();
         delay(500);
-        digitalWrite(ALARM_LED, LOW);    
+        digitalWrite(ALARM_LED, LOW);
+        pixels.clear();
+        pixels.show();
+    
     } else {
         digitalWrite(PUMP, HIGH);
         digitalWrite(ALARM_LED, LOW);
+
     }
 
     if (!client.connected()) {
@@ -56,7 +65,8 @@ IoTSystem::IoTSystem(
     lcd(LiquidCrystal_I2C(LCD_ADDR, LCD_COLS, LCD_ROWS)), 
     dht(DHT(DHT_DATA_PIN, DHT22)),
     esp_client(WiFiClient()),
-    client(PubSubClient(esp_client))
+    client(PubSubClient(esp_client)),
+    pixels(Adafruit_NeoPixel(NUMPIXELS, STRIP_PIN, NEO_GRB + NEO_KHZ800))
 {
     // "Normal" constructor
     this->temperature = 0;
@@ -112,6 +122,70 @@ void IoTSystem::setup_lcd() {
     lcd.backlight();    // turn on backlight (lcd.noBacklight(); turn off backlight).
 }
 
+void IoTSystem::setup_neopixel() {
+    // INITIALIZE NeoPixel strip object (REQUIRED)
+    pixels.begin();
+    // Turn OFF all pixels ASAP
+    pixels.show();
+    // Setting up  britghness of the Neopixel strip
+    pixels.setBrightness(BRIGHTNESS);    
+}
+
+void IoTSystem::setup_rgb_lights() {
+
+    /* ========= | Set All Pixel Colors to 'OFF'| ============*/ 
+    pixels.clear();
+
+    /*============= | Tool Warehouse Lights | ================*/
+    pixels.setPixelColor(0, pixels.Color(155, 155, 155));
+    pixels.fill(pixels.Color(155, 0, 155), 1, 3);
+    pixels.fill(pixels.Color(0, 0, 155), 4, 3);
+    pixels.fill(pixels.Color(155, 155, 0), 7, 3);
+    pixels.show();
+
+    /*=========== | RFID Reader Lights | ===============*/
+    pixels.setPixelColor(14, pixels.Color(0, 155, 0));
+    pixels.setPixelColor(16, pixels.Color(0, 155, 0));
+    pixels.setPixelColor(18, pixels.Color(0, 155, 0));
+    pixels.show();
+    delay(RGB_DELAY); 
+    pixels.setPixelColor(14, pixels.Color(155, 64, 10));
+    pixels.setPixelColor(16, pixels.Color(155, 64, 10));
+    pixels.setPixelColor(18, pixels.Color(155, 64, 10));
+    pixels.show();
+    delay(RGB_DELAY);
+    pixels.setPixelColor(14, pixels.Color(155, 0, 0));
+    pixels.setPixelColor(16, pixels.Color(155, 0, 0));
+    pixels.setPixelColor(18, pixels.Color(155, 0, 0));
+    pixels.show();
+    delay(RGB_DELAY);
+    
+/* ============ | Turning OFF All Lights | ===========  */
+
+    pixels.clear();
+    pixels.show();
+    delay(RGB_DELAY);
+
+
+}
+
+void IoTSystem::setup_blinking_rgb() {
+
+    /* ===== | truning ON all lights in red | ====== */
+    pixels.fill(pixels.Color(255, 0, 0), 0, 10);
+    pixels.setPixelColor(14, pixels.Color(255, 0, 0));
+    pixels.setPixelColor(16, pixels.Color(255, 0, 0));
+    pixels.setPixelColor(18, pixels.Color(255, 0, 0));
+    pixels.show();
+    delay(500);
+    
+    /* ========= |turnig off all lights| =============*/
+    pixels.clear();
+    pixels.show();
+    delay(500); 
+
+}
+
 /**
  * Setup Blynk server with auth
  */
@@ -161,6 +235,7 @@ void IoTSystem::reconnect() {
     }
   }
 }
+
 
 void IoTSystem::read_dht() {
     this->temperature = dht.readTemperature();

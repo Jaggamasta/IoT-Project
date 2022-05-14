@@ -10,6 +10,7 @@ IoTSystem iot(SSID, PASS, AUTH);
 void setup() {
     Serial.begin(115200);
     iot.setup_pins();
+    iot.setup_neopixel();
     iot.setup_lcd();
     iot.setup_sensors();
     iot.setup_wifi();
