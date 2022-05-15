@@ -1,4 +1,4 @@
-// Copyright (C) <2022> by [...]
+// Copyright (C) <2022> by [Jaggamasta]
 #pragma once
 
 #include <Arduino.h>
@@ -58,9 +58,9 @@ private:
     WiFiClient esp_client;
     PubSubClient client;
     Adafruit_NeoPixel pixels;
+    Stepper Motor;
    //BlynkTimer blynk_timer;
     
-
     int last_sent, lcd_last;
 
     void start_cooling();
@@ -71,12 +71,10 @@ private:
     void verbose_values();
     //void stepper_move_angle(float angle);
 
-    /* =========== | Alarm lights | ============ */
+    /* ------------------- | Alarm lights | --------------- */
     void setup_blinking_rgb();
     /* ==== | warehouse & changer lights | ===== */
     void setup_rgb_lights();
-
-   
 
     /*----------------------| Getter |-----------------------*/
     String get_ssid();
@@ -84,7 +82,6 @@ private:
     float get_temperature();
     float get_humidity();
     float get_fluid_level();
-
 
     /*------------| WiFi/MQTT/Blynk operations |-------------*/
     void publish_data();
@@ -94,14 +91,19 @@ private:
     //void callback(char* topic, byte* payload, unsigned int length);
 
     /*----------------| Stepper operations |-----------------*/
-    void move_to(Operation op);
-    void move_to_origin();
 
+    // --------------| Motor Angle Function | --------------
+    void setup_speed();
+    void moving(int ANGLE);
+
+    // --------------- | Motor Programms | ------------------
+    void motor_prog_1();
+    void motor_prog_2();
+    void motor_prog_3();            
+
+    /* ----------- | RFID Reader Operations | -------------- */
     void rfid_read();
 
-    void run_prog_1();
-    void run_prog_2();
-    void run_prog_3();
 public:
     /*------------| Constructors/Deconstructors |------------*/
     IoTSystem(
@@ -122,6 +124,8 @@ public:
 
     /* ------------ | Setup NeoPixel RGB Strip | ----------- */
     void setup_neopixel();
+
+
 
 
     /*--------------------| Super loop |---------------------*/

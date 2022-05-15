@@ -4,6 +4,7 @@
 #include "config.h"
 #include <Arduino.h>
 #include <BlynkSimpleEsp32.h>
+#include <Stepper.h>
 
 /**
  * General System super-loop
@@ -66,13 +67,13 @@ IoTSystem::IoTSystem(
     dht(DHT(DHT_DATA_PIN, DHT22)),
     esp_client(WiFiClient()),
     client(PubSubClient(esp_client)),
-    pixels(Adafruit_NeoPixel(NUMPIXELS, STRIP_PIN, NEO_GRB + NEO_KHZ800))
+    pixels(Adafruit_NeoPixel(NUMPIXELS, STRIP_PIN, NEO_GRB + NEO_KHZ800)),
+    Motor(Stepper(SPU, IN1, IN3, IN2, IN4))
 {
     // "Normal" constructor
     this->temperature = 0;
     this-> humidity = 0;
     this->fluid_level = 0;
-
 }
 
 /**
@@ -100,19 +101,16 @@ void IoTSystem::setup_wifi() {
     delay(1000);
 }
 
-
 /**
  * Setup necessary pins for System
  */
-void IoTSystem::setup_pins() {
-    
+void IoTSystem::setup_pins() { 
     // Pin setup code
     pinMode(ALARM_LED, OUTPUT);
     pinMode(TRIG, OUTPUT);
     pinMode(ECHO, INPUT);
     pinMode(PUMP, OUTPUT); 
 }
-
 /**
  * Setup LCD Screen
  */
@@ -132,7 +130,6 @@ void IoTSystem::setup_neopixel() {
 }
 
 void IoTSystem::setup_rgb_lights() {
-
     /* ========= | Set All Pixel Colors to 'OFF'| ============*/ 
     pixels.clear();
 
@@ -161,12 +158,9 @@ void IoTSystem::setup_rgb_lights() {
     delay(RGB_DELAY);
     
 /* ============ | Turning OFF All Lights | ===========  */
-
     pixels.clear();
     pixels.show();
     delay(RGB_DELAY);
-
-
 }
 
 void IoTSystem::setup_blinking_rgb() {
@@ -185,6 +179,108 @@ void IoTSystem::setup_blinking_rgb() {
     delay(500); 
 
 }
+
+void IoTSystem::setup_speed() {
+    Motor.setSpeed(5);
+}
+
+void IoTSystem::moving(int ANGLE) {
+/*
+Setting up the anlge function
+360 degrees /2048 steps = 0.18 factor per degree
+*/
+    Motor.step(ANGLE/0.18);    
+}
+
+
+void IoTSystem::motor_prog_1() {
+/* 
+Motor programm 1
+Tool selection order  1 -> 2 -> 3
+*/
+    //Motor.step(SPU);
+    moving(-210);
+    delay(DELAY_TOOL);
+    //Motor.step(-SPU);
+    moving(100);
+    delay(DELAY_WORK);
+    moving(-100);
+    delay(DELAY_TOOL);
+    moving(20);
+    delay(DELAY_TOOL);
+    moving(80);
+    delay(DELAY_WORK);
+    moving(-80);
+    delay(DELAY_TOOL);
+    moving(20);
+    delay(DELAY_TOOL);
+    moving(60);
+    delay(DELAY_WORK);
+    moving(-60);
+    delay(DELAY_WORK);
+    moving(170);
+    delay(DELAY_TOOL);
+}
+
+void IoTSystem::motor_prog_2() {
+/* 
+Motor programm 2
+Tool selection order  2 -> 3 -> 1
+*/
+    //Motor.step(SPU);
+    moving(-190);
+    delay(DELAY_TOOL);
+    //Motor.step(-SPU);
+    moving(80);
+    delay(DELAY_WORK);
+    moving(-80);
+    delay(DELAY_TOOL);
+    moving(20);
+    delay(DELAY_TOOL);
+    moving(60);
+    delay(DELAY_WORK);
+    moving(-60);
+    delay(DELAY_TOOL);
+    moving(-40);
+    delay(DELAY_TOOL);
+    moving(100);
+    delay(DELAY_WORK);
+    moving(-100);
+    delay(DELAY_TOOL);
+    moving(210);
+    delay(DELAY_TOOL);   
+}
+
+void IoTSystem::motor_prog_3() {
+/* 
+Motor programm 2
+Tool selection order   3 -> 1 -> 2
+*/
+    //Motor.step(SPU);
+    moving(-170);
+    delay(DELAY_TOOL);
+    //Motor.step(-SPU);
+    moving(60);
+    delay(DELAY_WORK);
+    moving(-60);
+    delay(DELAY_TOOL);
+    moving(-40);
+    delay(DELAY_TOOL);
+    moving(100);
+    delay(DELAY_WORK);
+    moving(-100);
+    delay(DELAY_TOOL);
+    moving(20);
+    delay(DELAY_TOOL);
+    moving(80);
+    delay(DELAY_WORK);
+    moving(-80);
+    delay(DELAY_TOOL);
+    moving(190);
+    delay(DELAY_TOOL);
+
+}
+
 
 /**
  * Setup Blynk server with auth
