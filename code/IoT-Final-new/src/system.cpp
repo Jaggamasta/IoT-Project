@@ -68,7 +68,7 @@ IoTSystem::IoTSystem(
     esp_client(WiFiClient()),
     client(PubSubClient(esp_client)),
     pixels(Adafruit_NeoPixel(NUMPIXELS, STRIP_PIN, NEO_GRB + NEO_KHZ800)),
-    Motor(Stepper(SPU, IN1, IN3, IN2, IN4))
+    motor(Stepper(SPU, IN1, IN3, IN2, IN4))
 {
     // "Normal" constructor
     this->temperature = 0;
@@ -181,7 +181,7 @@ void IoTSystem::setup_blinking_rgb() {
 }
 
 void IoTSystem::setup_speed() {
-    Motor.setSpeed(5);
+    motor.setSpeed(5);
 }
 
 void IoTSystem::moving(int ANGLE) {
@@ -189,7 +189,7 @@ void IoTSystem::moving(int ANGLE) {
 Setting up the anlge function
 360 degrees /2048 steps = 0.18 factor per degree
 */
-    Motor.step(ANGLE/0.18);    
+    motor.step(ANGLE/0.18);    
 }
 
 

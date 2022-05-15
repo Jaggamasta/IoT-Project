@@ -12,6 +12,7 @@
 //#include <BlynkSimpleEsp32.h>
 #include <LiquidCrystal_I2C.h>
 #include <Adafruit_NeoPixel.h>
+#include <Stepper.h>
 
 /**
  * Operation area of the system
@@ -58,7 +59,7 @@ private:
     WiFiClient esp_client;
     PubSubClient client;
     Adafruit_NeoPixel pixels;
-    Stepper Motor;
+    Stepper motor;
    //BlynkTimer blynk_timer;
     
     int last_sent, lcd_last;

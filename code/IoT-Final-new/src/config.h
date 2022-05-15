@@ -11,6 +11,7 @@
 //#include <BlynkSimpleEsp32.h>
 #include <LiquidCrystal_I2C.h>
 #include <Adafruit_NeoPixel.h>
+#include <MFRC522.h>
 
 
 // ---------------------------- | WiFi credentials | -----------------------------------
