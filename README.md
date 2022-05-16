@@ -7,13 +7,11 @@ Stuttgart (Jahrgang 2019, Kurs TWIE-19B).
 Wir, die Mitglieder des Teams Nr. 12, haben viel Energie und Zeit in 
 dieses Projekt investiert und sind sehr darauf gespannt die Umsetzung 
 des geplanten Konzeptes vorzustellen.  
-
-Viel Spaß beim Erkunden
-
+Viel Spaß beim Erkunden!
 
 Mit besten Grüßen
-Team 12
 
+Team 12
 
 ### §§§§§§§§§§§
 
