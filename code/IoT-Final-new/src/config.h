@@ -42,13 +42,12 @@
 //#define BLYNK_AUTH_TOKEN "OWErakJ76NEjc2APznUTV3FPQEjEx-OC"   // Token from Davis blynk project
 
 
-// ------------------------- | Pin definitions | ------------------------------------------
+/* ========================== | PIN DEFINITIONS | ====================================== */
 #define TRIG            13 // ultrasonic trigger
 #define ECHO            12 // ultrasonic echo
 #define PUMP            15 // relais & pump
 #define ALARM_LED       16 // red alarm led & piezo
-// Which pin on the Board is connected to the NeoPixels?
-#define STRIP_PIN       2
+#define STRIP_PIN       2  // RGB strip pin
 
 // --------------------------- | motor pins | ---------------------------------------------
 #define SPU             2048
@@ -58,17 +57,59 @@
 #define IN4             26
 
 // ------------------------- | motor delays | ----------------------------------------------
-
 #define DELAY_WORK      5000
 #define DELAY_TOOL      2000
 
+// ----------------------- | rfid readers pins | -------------------------------------------
+#define RST_PIN         4   // reset pin       
+#define SS_1_PIN        7   // SDA pin reader 1        
+#define SS_2_PIN        8   // SDA pin reader 2
+#define SS_3_PIN        9   // SDA pin reader 3
+
+/**  
+SDA     GPIO 7, 8, 9    
+SCK     GPIO 6
+MOSI    GPIO 23
+MISO    GPIO 19
+RST     GPIO 4
+GND     GROUND
+3.3V    3.3V 
+ */
+
+// --------------------- | define reader amount | ------------------------------------------
+#define NR_OF_READERS   3
+#define NUM_UIDS        3
+
+// -------------------- | reader uid definitions | -----------------------------------------
+
+#define READER_0_UIDS   {\
+    {0xA3, 0x42, 0x68, 0x39},\
+    {0xC3, 0x77, 0x4A, 0x39},\
+    0\
+}\
+
+#define READER_1_UIDS   {\
+    {0xE6, 0xBD, 0xC6, 0x24},\
+    0,\
+    0\
+}\
+
+#define READER_2_UIDS   {\
+    {0x93, 0x86, 0x9D, 0x39},\
+    0,\
+    0\
+}\
 
 // ------------------------------| LCD | ----------------------------------------------------
 
 #define LCD_COLS        16
 #define LCD_ROWS        2
 #define LCD_ADDR        0x27
-
+/** 
+ * LCD pins
+ *      SDA             21
+ *      SCL             22
+ * */ 
 
 // -------------------------- | DHT Sensor | -------------------------------------------------
 

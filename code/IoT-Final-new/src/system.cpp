@@ -7,8 +7,10 @@
 #include <Stepper.h>
 
 /**
+ * 
  * General System super-loop
  * Same as `void loop()` but only for the project
+ * 
  */
 void IoTSystem::loop() {
     // <-- USER CODE GOES HERE -->
@@ -68,7 +70,8 @@ IoTSystem::IoTSystem(
     esp_client(WiFiClient()),
     client(PubSubClient(esp_client)),
     pixels(Adafruit_NeoPixel(NUMPIXELS, STRIP_PIN, NEO_GRB + NEO_KHZ800)),
-    motor(Stepper(SPU, IN1, IN3, IN2, IN4))
+    motor(Stepper(SPU, IN1, IN3, IN2, IN4)),
+    ssPins{SS_1_PIN, SS_2_PIN, SS_3_PIN}
 {
     // "Normal" constructor
     this->temperature = 0;
@@ -120,6 +123,7 @@ void IoTSystem::setup_lcd() {
     lcd.backlight();    // turn on backlight (lcd.noBacklight(); turn off backlight).
 }
 
+/* ============= | Setting up Neopixel RGB Strip | =========== */
 void IoTSystem::setup_neopixel() {
     // INITIALIZE NeoPixel strip object (REQUIRED)
     pixels.begin();
@@ -130,17 +134,17 @@ void IoTSystem::setup_neopixel() {
 }
 
 void IoTSystem::setup_rgb_lights() {
-    /* ========= | Set All Pixel Colors to 'OFF'| ============*/ 
+    // --------- | Set All Pixel Colors to 'OFF'| --------------- 
     pixels.clear();
 
-    /*============= | Tool Warehouse Lights | ================*/
+    // ------------ | Tool Warehouse Lights | -------------------
     pixels.setPixelColor(0, pixels.Color(155, 155, 155));
     pixels.fill(pixels.Color(155, 0, 155), 1, 3);
     pixels.fill(pixels.Color(0, 0, 155), 4, 3);
     pixels.fill(pixels.Color(155, 155, 0), 7, 3);
     pixels.show();
 
-    /*=========== | RFID Reader Lights | ===============*/
+    // ------------- | RFID Reader Lights | -------------------------
     pixels.setPixelColor(14, pixels.Color(0, 155, 0));
     pixels.setPixelColor(16, pixels.Color(0, 155, 0));
     pixels.setPixelColor(18, pixels.Color(0, 155, 0));
@@ -157,7 +161,7 @@ void IoTSystem::setup_rgb_lights() {
     pixels.show();
     delay(RGB_DELAY);
     
-/* ============ | Turning OFF All Lights | ===========  */
+// ---------------- | Turning OFF All Lights | ----------------------
     pixels.clear();
     pixels.show();
     delay(RGB_DELAY);
@@ -165,7 +169,7 @@ void IoTSystem::setup_rgb_lights() {
 
 void IoTSystem::setup_blinking_rgb() {
 
-    /* ===== | truning ON all lights in red | ====== */
+    // --------- | truning ON all lights in red | ------
     pixels.fill(pixels.Color(255, 0, 0), 0, 10);
     pixels.setPixelColor(14, pixels.Color(255, 0, 0));
     pixels.setPixelColor(16, pixels.Color(255, 0, 0));
@@ -173,13 +177,14 @@ void IoTSystem::setup_blinking_rgb() {
     pixels.show();
     delay(500);
     
-    /* ========= |turnig off all lights| =============*/
+    // ------------ |turnig off all lights| ------------
     pixels.clear();
     pixels.show();
     delay(500); 
 
 }
 
+/* ================= | STEPPER MOTOR FUNCTIONS | ================= */
 void IoTSystem::setup_speed() {
     motor.setSpeed(5);
 }
@@ -192,7 +197,7 @@ Setting up the anlge function
     motor.step(ANGLE/0.18);    
 }
 
-
+// ----------- | Stepper programs | -------------------------
 void IoTSystem::motor_prog_1() {
 /* 
 Motor programm 1
@@ -281,24 +286,24 @@ Tool selection order   3 -> 1 -> 2
 
 }
 
-
+/* =============== | Setup Blynk server with auth | ================== */
 /**
  * Setup Blynk server with auth
  */
 void IoTSystem::setup_blynk() {
     // Blynk setup code
-    Blynk.begin(AUTH, SSID, PASS, BLYNK_IP, BLYNK_PORT);      // Blynk.begin(auth, ssid, pass, IPAdress(192.168.1.100), 8080)
-    //timer.setInterval(1000L, myTimerEvent);     // setup a unction to be calles every second
-
+    Blynk.begin(AUTH, SSID, PASS, BLYNK_IP, BLYNK_PORT);      
+    // Blynk.begin(auth, ssid, pass, IPAdress(192.168.1.100), 8080)
+    //timer.setInterval(1000L, myTimerEvent);     
+    // setup a unction to be calles every second
 }
 
+/* ======================= | Sensor setup | =========================== */
 void IoTSystem::setup_sensors() {
     dht.begin();
 }
 
-/**
- * Setup MQTT server
- */
+/* ===================== | Setup MQTT server | ========================= */
 void IoTSystem::setup_mqtt() {
     // MQTT setup code
     String clientId = "ESP8266Client-";
@@ -307,7 +312,7 @@ void IoTSystem::setup_mqtt() {
     client.connect(clientId.c_str(), "student", "iotproject2§&d");
     //client.setCallback(this->callback);
 }
-
+// --------------------- | Reconnect Function | --------------------------
 void IoTSystem::reconnect() {
   // Loop until we're reconnected
   while (!client.connected()) {
@@ -332,12 +337,15 @@ void IoTSystem::reconnect() {
   }
 }
 
+/* ==================== | Reading Seonor Data | ====================== */
 
+// -------------------- | Temperature sensor | ---------------------------
 void IoTSystem::read_dht() {
     this->temperature = dht.readTemperature();
     this->humidity = dht.readHumidity();
 }
 
+// --------------- | Ultrasonic sensor for fluid lvl | --------------------
 void IoTSystem::read_fluid_lvl() {
 
     float t = 0, h = 0;
@@ -367,7 +375,6 @@ void IoTSystem::verbose_values() {
         humidity, 
         fluid_level
     );
-    
 }
 
 void IoTSystem::blynk_send_data() {
@@ -417,8 +424,86 @@ float IoTSystem::get_fluid_level() {
     return this->fluid_level;
 }
 
-void IoTSystem::rfid_read() {
+void IoTSystem::setup_reader() {
+    SPI.begin(); // Init SPI bus
+    for (uint8_t reader = 0; reader < NR_OF_READERS; reader++) {
+        mfrc522[reader].PCD_Init(ssPins[reader], RST_PIN); // Init each MFRC522 card
+        Serial.print(F("Reader "));
+        Serial.print(reader);
+        Serial.print(F(": "));
+        mfrc522[reader].PCD_DumpVersionToSerial();
+    }    
+}
 
+void IoTSystem::dump_byte_array(byte *buffer, byte bufferSize) {
+    
+    for (byte i = 0; i < bufferSize; i++) {
+        Serial.print(buffer[i] < 0x10 ? " 0" : " ");
+        Serial.print(buffer[i], HEX);
+    }
+}
+
+void IoTSystem::reader_loop() {
+
+
+    for (uint8_t reader = 0; reader < NR_OF_READERS; reader++) {
+    // Look for new cards
+
+        if (mfrc522[reader].PICC_IsNewCardPresent() && mfrc522[reader].PICC_ReadCardSerial()) {
+            Serial.print(F("Reader "));
+            Serial.print(reader);
+            // Show some details of the PICC (that is: the tag/card)
+            Serial.print(F(": Card UID:"));
+            dump_byte_array(mfrc522[reader].uid.uidByte, mfrc522[reader].uid.size);
+            Serial.println();
+            Serial.print(F("PICC type: "));
+            MFRC522::PICC_Type piccType = mfrc522[reader].PICC_GetType(mfrc522[reader].uid.sak);
+            Serial.println(mfrc522[reader].PICC_GetTypeName(piccType));
+
+
+            reader_check[reader] = true;
+            for (int j=0; j<4; j++){
+                if (mfrc522[reader].uid.uidByte[j] != reader_uids[reader][0][j]) {  //Vergleich mit zugewiesen IDs
+                    reader_check[reader] = false;
+                }
+            }
+            
+            if (reader_check[0] || reader_check[1] || reader_check[2]) {        //prüft ob ein reader das richtige Werkzeug hat
+                //digitalWrite(G_LED,HIGH);                       // LED, muss noch durch RGB ersetzt werden
+                lcd.print("Richtiges Tool!");
+                lcd.setCursor(0,1);
+                lcd.print("UID:");
+                for (byte i = 0; i < mfrc522[reader].uid.size; i++) {
+                lcd.print(mfrc522[reader].uid.uidByte[i] < 0x10 ? " 0" : " ");
+                lcd.print(mfrc522[reader].uid.uidByte[i], HEX);
+
+                }
+            }
+
+            else {                                            //Ablauf für falsches Werkezug
+                //digitalWrite(R_LED,HIGH);                       //LED muss noch durch RGN ersetzt werden
+                lcd.print("Falsches Tool!");
+                lcd.setCursor(0,1);
+                lcd.print("UID:");
+                for (byte i = 0; i < mfrc522[reader].uid.size; i++){
+                lcd.print(mfrc522[reader].uid.uidByte[i] < 0x10 ? " 0" : " ");
+                lcd.print(mfrc522[reader].uid.uidByte[i], HEX);
+                }
+            }
+
+            // Halt PICC
+            mfrc522[reader].PICC_HaltA();
+            // Stop encryption on PCD
+            mfrc522[reader].PCD_StopCrypto1();
+            delay(2000);
+            lcd.clear();
+            reader_check[0] = false;                  //Wird nicht zurückgesetzt... muss nochmal geprüft werden
+            reader_check[1] = false;
+            reader_check[2] = false;
+            //digitalWrite(G_LED,LOW);
+            //digitalWrite(R_LED,LOW);
+        } //if (mfrc522[reader].PICC_IsNewC
+    } //for(uint8_t reader    
 }
 
 void IoTSystem::publish_data() {

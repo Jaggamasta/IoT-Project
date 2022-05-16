@@ -15,12 +15,17 @@ GRND    GROUND
 #include <LiquidCrystal_I2C.h>
 #include <Wire.h>
 
+// ----------------------- | rfid readers pins | -------------------------------------------
+#define RST_PIN         4   // reset pin       
+#define SS_1_PIN        7   // SDA pin reader 1        
+#define SS_2_PIN        8   // SDA pin reader 2
+#define SS_3_PIN        9   // SDA pin reader 3
+
+
+
 
 /* == | pin definitions | == */
-#define RST_PIN         4          
-#define SS_1_PIN        7        
-#define SS_2_PIN        8
-#define SS_3_PIN        9
+
 #define SDA 13                //LCD, will be removed after integration
 #define SCL 14                //LCD, will be removed after integration
 

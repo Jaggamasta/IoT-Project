@@ -13,6 +13,7 @@
 #include <LiquidCrystal_I2C.h>
 #include <Adafruit_NeoPixel.h>
 #include <Stepper.h>
+#include "config.h"
 
 /**
  * Operation area of the system
@@ -60,6 +61,15 @@ private:
     PubSubClient client;
     Adafruit_NeoPixel pixels;
     Stepper motor;
+    MFRC522 mfrc522[3];
+    byte ssPins[3];
+    uint32_t reader_uids[3][NUM_UIDS][4] = {
+        READER_0_UIDS, 
+        READER_1_UIDS, 
+        READER_2_UIDS
+    };
+    bool reader_check[3];
+
    //BlynkTimer blynk_timer;
     
     int last_sent, lcd_last;
@@ -72,10 +82,6 @@ private:
     void verbose_values();
     //void stepper_move_angle(float angle);
 
-    /* ------------------- | Alarm lights | --------------- */
-    void setup_blinking_rgb();
-    /* ==== | warehouse & changer lights | ===== */
-    void setup_rgb_lights();
 
     /*----------------------| Getter |-----------------------*/
     String get_ssid();
@@ -91,7 +97,7 @@ private:
     void blynk_send_data();
     //void callback(char* topic, byte* payload, unsigned int length);
 
-    /*----------------| Stepper operations |-----------------*/
+    /* ============== | Stepper operations | ================ */
 
     // --------------| Motor Angle Function | --------------
     void setup_speed();
@@ -103,7 +109,9 @@ private:
     void motor_prog_3();            
 
     /* ----------- | RFID Reader Operations | -------------- */
-    void rfid_read();
+
+    void dump_byte_array(byte *buffer, byte bufferSize);
+    void reader_loop(); 
 
 public:
     /*------------| Constructors/Deconstructors |------------*/
@@ -115,6 +123,7 @@ public:
     ~IoTSystem() {}
 
 
+
     /*-----------------| Setup procedures |------------------*/
     void setup_wifi();
     void setup_pins();
@@ -122,15 +131,15 @@ public:
     void setup_blynk();
     void setup_lcd();
     void setup_sensors();
+    void setup_reader();
 
     /* ------------ | Setup NeoPixel RGB Strip | ----------- */
     void setup_neopixel();
-
-
-
+    /* ------------------- | Alarm lights | --------------- */
+    void setup_blinking_rgb();
+    /* ==== | warehouse & changer lights | ===== */
+    void setup_rgb_lights();
 
     /*--------------------| Super loop |---------------------*/
     void loop();
 };
-
-
