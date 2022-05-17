@@ -15,6 +15,12 @@
 #include <Stepper.h>
 #include "config.h"
 
+
+
+#define READER_1    0
+#define READER_2    1
+#define READER_3    2
+
 /**
  * Operation area of the system
  *
@@ -64,9 +70,9 @@ private:
     MFRC522 mfrc522[3];
     byte ssPins[3];
     uint32_t reader_uids[3][NUM_UIDS][4] = {
-        READER_0_UIDS, 
-        READER_1_UIDS, 
-        READER_2_UIDS
+        READER_0_UIDS,  // all rfid tags for reader 0
+        READER_1_UIDS,  // all rfid tags for reader 1
+        READER_2_UIDS   // all rfid tags for reader 2
     };
     bool reader_check[3];
 
@@ -74,8 +80,8 @@ private:
     
     int last_sent, lcd_last;
 
-    void start_cooling();
-    void stop_cooling();
+    void start_cooling();   // not used yet
+    void stop_cooling();    // not used yet
 
     void read_dht();
     void read_fluid_lvl();
@@ -104,14 +110,16 @@ private:
     void moving(int ANGLE);
 
     // --------------- | Motor Programms | ------------------
-    void motor_prog_1();
-    void motor_prog_2();
-    void motor_prog_3();            
+    void tool_prog_1();
+    void tool_prog_2();
+    void tool_prog_3();            
 
     /* ----------- | RFID Reader Operations | -------------- */
 
     void dump_byte_array(byte *buffer, byte bufferSize);
     void reader_loop(); 
+    bool is_right_tool(uint8_t reader);
+
 
 public:
     /*------------| Constructors/Deconstructors |------------*/
@@ -140,6 +148,7 @@ public:
     /* ==== | warehouse & changer lights | ===== */
     void setup_rgb_lights();
 
-    /*--------------------| Super loop |---------------------*/
+    /*--------------------| Iot loops |---------------------*/
+    void sensor_loop();
     void loop();
 };

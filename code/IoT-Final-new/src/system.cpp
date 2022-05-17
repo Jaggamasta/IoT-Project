@@ -13,7 +13,28 @@
  * 
  */
 void IoTSystem::loop() {
-    // <-- USER CODE GOES HERE -->
+
+
+
+
+
+
+sensor_loop();
+
+
+
+
+}
+
+
+void IoTSystem::sensor_loop() {
+
+    /*
+    Firt try this PULLUP solutuion. 
+    If not working, put a switch between 
+    relais and pump
+    */
+    digitalWrite(PUMP, PULLUP); 
     
     read_dht();
     read_fluid_lvl();
@@ -54,7 +75,8 @@ void IoTSystem::loop() {
     }
 
     client.loop();
-    delay(100);    
+    delay(100);   
+
 }
 
 IoTSystem::IoTSystem(
@@ -198,15 +220,46 @@ Setting up the anlge function
 }
 
 // ----------- | Stepper programs | -------------------------
-void IoTSystem::motor_prog_1() {
+void IoTSystem::tool_prog_1() {
 /* 
 Motor programm 1
 Tool selection order  1 -> 2 -> 3
 */
+
+/**
+ *  wihtout sensor_loop()
+ * 
+ * 
+ *  1.  Wait for Blynk input -> do nothing
+ *  2.  clicking tool_prog_1
+ *  3.  moving tool1
+ *  4.  rfid tool check -> right tool or not? -> warehouse RGBs tool1 lighten up with 5sec delay
+ *  5.  tool status (how often was the tool already been used)
+ *  6.  tool rgb G, Y, R
+ *  7.  moving to working
+ *  8.  move back tool1 -> put down tool 1
+ *  9.  move to tool2 
+ *  10. rfid tool check -> right tool or not? -> warehouse RGBs tool2 lighten up with 5sec delay
+ *  11. tool status (how often was the tool already been used)
+ *  12. tool rgb G, Y, R
+ *  13. moving to working
+ *  14. move back tool2 -> put down tool2
+ *  15. move to tool3 
+ *  16. rfid tool check -> right tool or not? -> warehouse RGBs tool3 lighten up with 5sec delay
+ *  11. tool status (how often was the tool already been used)
+ *  12. tool rgb G, Y, R
+ *  13. moving to working
+ *  14. move back tool3 -> put down tool3
+ *  15. move to pos 0.
+ *  16. repeat loop
+ *  
+ * 
+ */
+
+    
     //Motor.step(SPU);
-    moving(-210);
+    moving(-210);    
     delay(DELAY_TOOL);
-    //Motor.step(-SPU);
     moving(100);
     delay(DELAY_WORK);
     moving(-100);
@@ -227,7 +280,7 @@ Tool selection order  1 -> 2 -> 3
     delay(DELAY_TOOL);
 }
 
-void IoTSystem::motor_prog_2() {
+void IoTSystem::tool_prog_2() {
 /* 
 Motor programm 2
 Tool selection order  2 -> 3 -> 1
@@ -256,7 +309,7 @@ Tool selection order  2 -> 3 -> 1
     delay(DELAY_TOOL);   
 }
 
-void IoTSystem::motor_prog_3() {
+void IoTSystem::tool_prog_3() {
 /* 
 Motor programm 2
 Tool selection order   3 -> 1 -> 2
@@ -443,6 +496,37 @@ void IoTSystem::dump_byte_array(byte *buffer, byte bufferSize) {
     }
 }
 
+
+bool IoTSystem::is_right_tool(uint8_t reader) {
+    bool uid_check[NUM_UIDS];
+    for (int i = 0; i < NUM_UIDS; ++i) {
+        uid_check[i] = true;
+    }
+    if(mfrc522[reader].PICC_IsNewCardPresent() && mfrc522[reader].PICC_ReadCardSerial()) {
+        for (int i = 0; i < NUM_UIDS; ++i) {   
+            for (int j = 0; j < 4; ++j) {
+                if(mfrc522[reader].uid.uidByte[j] != reader_uids[reader][i][j]) {
+                    uid_check[i] = false;
+                }
+            }
+        }
+    }
+    
+    // Halt PICC
+    mfrc522[reader].PICC_HaltA();
+    // Stop encryption on PCD
+    mfrc522[reader].PCD_StopCrypto1();
+
+    for (int i = 0; i < NUM_UIDS; ++i) {
+        if (uid_check[i] == true) {
+            return true;
+        }
+    }
+    return false;
+
+}
+
+
 void IoTSystem::reader_loop() {
 
 
@@ -459,7 +543,6 @@ void IoTSystem::reader_loop() {
             Serial.print(F("PICC type: "));
             MFRC522::PICC_Type piccType = mfrc522[reader].PICC_GetType(mfrc522[reader].uid.sak);
             Serial.println(mfrc522[reader].PICC_GetTypeName(piccType));
-
 
             reader_check[reader] = true;
             for (int j=0; j<4; j++){
