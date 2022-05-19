@@ -5,8 +5,6 @@
 
 IoTSystem iot(SSID, PASS, AUTH);
 
-// value1 = Temperatur, value2 = Humidity, value3 = Fluid Level
-// int value = 0;
 void setup() {
     Serial.begin(115200);
     iot.setup_pins();
@@ -20,6 +18,5 @@ void setup() {
 }
 
 void loop() {
-    //iot.loop();
-    iot.sensor_loop();
+    iot.loop();
 }

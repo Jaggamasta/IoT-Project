@@ -14,15 +14,7 @@
  */
 void IoTSystem::loop() {
 
-
-
-
-
-
 sensor_loop();
-
-
-
 
 }
 
@@ -43,9 +35,10 @@ void IoTSystem::sensor_loop() {
         digitalWrite(PUMP, LOW);
         digitalWrite(ALARM_LED, HIGH);
         pixels.fill(pixels.Color(255, 0, 0), 0, 10);
-        pixels.setPixelColor(14, pixels.Color(255, 0, 0));
-        pixels.setPixelColor(16, pixels.Color(255, 0, 0));
-        pixels.setPixelColor(18, pixels.Color(255, 0, 0));
+        pixels.fill(pixels.Color(255, 0, 0), 15, 2);
+        pixels.fill(pixels.Color(255, 0, 0), 18, 2);
+        pixels.fill(pixels.Color(255, 0, 0), 21, 2);
+
         pixels.show();
         delay(500);
         digitalWrite(ALARM_LED, LOW);

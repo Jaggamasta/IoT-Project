@@ -6,7 +6,7 @@ void setup() {
     setup_serial();
     setup_reader(); 
     setup_lcd();
-    setup_led();   
+    //setup_led();   
   }
 
 void loop() {

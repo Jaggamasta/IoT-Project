@@ -17,9 +17,9 @@ GRND    GROUND
 
 // ----------------------- | rfid readers pins | -------------------------------------------
 #define RST_PIN         4   // reset pin       
-#define SS_1_PIN        7   // SDA pin reader 1        
-#define SS_2_PIN        8   // SDA pin reader 2
-#define SS_3_PIN        9   // SDA pin reader 3
+#define SS_1_PIN        5   // SDA pin reader 1 (0)        
+#define SS_2_PIN        39  // SDA pin reader 2 (1)
+#define SS_3_PIN        14   // SDA pin reader 3 (2)
 
 
 
@@ -34,6 +34,6 @@ GRND    GROUND
 
 /* === | define output lights | ==== */
 // they will be removed after integration
-#define G_LED           4
-#define R_LED           2
+#define G_LED           36
+#define R_LED           35
 
