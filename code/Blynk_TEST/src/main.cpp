@@ -17,8 +17,8 @@ char auth[] = BLYNK_AUTH_TOKEN;
 
 // Your WiFi credentials.
 // Set password to "" for open networks.
-char ssid[] = "iPhone ";
-char pass[] = "12qwasyx";
+char ssid[] = "WLAN-780596";
+char pass[] = "Passwort123!";
 
 #define LED01 23
 #define LED02 22
@@ -31,36 +31,55 @@ char pass[] = "12qwasyx";
 #define LED09 2
 #define LED10 15
 
+
+void Blinklicht() {
+  int i;
+
+  for (i = 0; i < 15; i++)
+  {
+    digitalWrite(5, HIGH);
+    delay (250);
+    digitalWrite(5, LOW);
+    delay (1000);
+  }
+}
+
+int Button01;
+
 BLYNK_WRITE(V0)
 {
-  int pinValue = param.asInt();
-  digitalWrite(23, pinValue);
+  Button01 = param.asInt();
+  if (Button01 == 1) 
+  {
+    Blinklicht();
+  }
+  else
+  {
+    digitalWrite(5, LOW);
+  }
+  
+  
 }
+
 BLYNK_WRITE(V1)
 {
-  int pinValue = param.asInt();
-  digitalWrite(0, pinValue);
+  int PIN01 = param.asInt();
+  digitalWrite(15, PIN01);
 }
-BLYNK_WRITE(V2)
-{
-  int pinValue = param.asInt();
-  digitalWrite(18, pinValue);
-}
-BLYNK_WRITE(V3)
-{
-  int pinValue = param.asInt();
-  digitalWrite(15, pinValue);
-}
-
-
 
 void setup()
 {
   // Debug console
   Serial.begin(115200);
   pinMode(23, OUTPUT);
-  pinMode(0, OUTPUT);
+  pinMode(22, OUTPUT);
+  pinMode(21, OUTPUT);
+  pinMode(19, OUTPUT);
   pinMode(18, OUTPUT);
+  pinMode(5, OUTPUT);
+  pinMode(4, OUTPUT);
+  pinMode(0, OUTPUT);
+  pinMode(2, OUTPUT);
   pinMode(15, OUTPUT);
 
   Blynk.begin(auth, ssid, pass);
@@ -72,6 +91,7 @@ void setup()
 void loop()
 {
   Blynk.run();
+ 
   // You can inject your own code or combine it with other sketches.
   // Check other examples on how to communicate with Blynk. Remember
   // to avoid delay() function!
