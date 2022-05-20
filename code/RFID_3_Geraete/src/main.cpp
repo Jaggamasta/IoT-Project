@@ -3,9 +3,11 @@
 
 void setup() {
 
+    
+    setup_lcd();
     setup_serial();
     setup_reader(); 
-    setup_lcd();
+    
     //setup_led();   
   }
 

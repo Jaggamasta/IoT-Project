@@ -10,6 +10,6 @@ void setup() {
 void loop() {
     
     motor_prog_1();
-    motor_prog_2();
-    motor_prog_3();
+    //motor_prog_2();
+    //motor_prog_3();
 }
