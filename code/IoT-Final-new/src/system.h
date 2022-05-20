@@ -1,4 +1,4 @@
-// Copyright (C) <2022> by [Jaggamasta]
+// Copyright (C) <2022> by IoT-Project-Team-12-DHBW-Stuttgart-TWIE19B
 #pragma once
 
 #include <Arduino.h>

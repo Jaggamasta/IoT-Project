@@ -1,4 +1,4 @@
-// Copyright (C) <2022> by [...]
+// Copyright (C) <2022> by IoT-Project-Team-12-DHBW-Stuttgart-TWIE19B
 #include "system.h"
 #include "WiFiClient.h"
 #include "config.h"
@@ -31,9 +31,9 @@ void IoTSystem::sensor_loop() {
     read_dht();
     read_fluid_lvl();
 
-     if (temperature >= 25) { 
+     if (temperature >= 28) { 
         digitalWrite(PUMP, LOW);
-        digitalWrite(ALARM_LED, HIGH);
+        digitalWrite(ALARM_PIEZO, HIGH);
         pixels.fill(pixels.Color(255, 0, 0), 0, 10);
         pixels.fill(pixels.Color(255, 0, 0), 15, 2);
         pixels.fill(pixels.Color(255, 0, 0), 18, 2);
@@ -41,13 +41,13 @@ void IoTSystem::sensor_loop() {
 
         pixels.show();
         delay(500);
-        digitalWrite(ALARM_LED, LOW);
+        digitalWrite(ALARM_PIEZO, LOW);
         pixels.clear();
         pixels.show();
     
     } else {
         digitalWrite(PUMP, HIGH);
-        digitalWrite(ALARM_LED, LOW);
+        digitalWrite(ALARM_PIEZO, LOW);
 
     }
 
@@ -58,9 +58,9 @@ void IoTSystem::sensor_loop() {
     if(millis() - last_sent >= 2000) {
         lcd.clear();
         lcd.setCursor(0, 0);
-        lcd.print((temperature >= 25) ? "Temp. too HIGH!" : "Temp. Ok");
+        lcd.print((temperature >= 28) ? "Temp. too HIGH!" : "Temp. Ok");
         lcd.setCursor(0, 1);
-        lcd.print((temperature >= 25) ? "Cooling NOW!" : "No need Cooling");
+        lcd.print((temperature >= 28) ? "Cooling NOW!" : "No need Cooling");
         verbose_values();
         publish_data();
         blynk_send_data();
@@ -124,7 +124,7 @@ void IoTSystem::setup_wifi() {
  */
 void IoTSystem::setup_pins() { 
     // Pin setup code
-    pinMode(ALARM_LED, OUTPUT);
+    pinMode(ALARM_PIEZO, OUTPUT);
     pinMode(TRIG, OUTPUT);
     pinMode(ECHO, INPUT);
     pinMode(PUMP, OUTPUT); 
@@ -251,25 +251,25 @@ Tool selection order  1 -> 2 -> 3
 
     
     //Motor.step(SPU);
-    moving(-210);    
+    moving(210);    
     delay(DELAY_TOOL);
-    moving(100);
-    delay(DELAY_WORK);
     moving(-100);
-    delay(DELAY_TOOL);
-    moving(20);
-    delay(DELAY_TOOL);
-    moving(80);
     delay(DELAY_WORK);
+    moving(100);
+    delay(DELAY_TOOL);
+    moving(-20);
+    delay(DELAY_TOOL);
     moving(-80);
-    delay(DELAY_TOOL);
-    moving(20);
-    delay(DELAY_TOOL);
-    moving(60);
     delay(DELAY_WORK);
+    moving(80);
+    delay(DELAY_TOOL);
+    moving(-20);
+    delay(DELAY_TOOL);
     moving(-60);
     delay(DELAY_WORK);
-    moving(170);
+    moving(60);
+    delay(DELAY_WORK);
+    moving(-170);
     delay(DELAY_TOOL);
 }
 
@@ -279,26 +279,26 @@ Motor programm 2
 Tool selection order  2 -> 3 -> 1
 */
     //Motor.step(SPU);
-    moving(-190);
+    moving(190);
     delay(DELAY_TOOL);
     //Motor.step(-SPU);
-    moving(80);
-    delay(DELAY_WORK);
     moving(-80);
-    delay(DELAY_TOOL);
-    moving(20);
-    delay(DELAY_TOOL);
-    moving(60);
     delay(DELAY_WORK);
+    moving(80);
+    delay(DELAY_TOOL);
+    moving(-20);
+    delay(DELAY_TOOL);
     moving(-60);
-    delay(DELAY_TOOL);
-    moving(-40);
-    delay(DELAY_TOOL);
-    moving(100);
     delay(DELAY_WORK);
-    moving(-100);
+    moving(60);
     delay(DELAY_TOOL);
-    moving(210);
+    moving(40);
+    delay(DELAY_TOOL);
+    moving(-100);
+    delay(DELAY_WORK);
+    moving(100);
+    delay(DELAY_TOOL);
+    moving(-210);
     delay(DELAY_TOOL);   
 }
 
@@ -308,26 +308,26 @@ Motor programm 2
 Tool selection order   3 -> 1 -> 2
 */
     //Motor.step(SPU);
-    moving(-170);
+    moving(170);
     delay(DELAY_TOOL);
     //Motor.step(-SPU);
-    moving(60);
-    delay(DELAY_WORK);
     moving(-60);
-    delay(DELAY_TOOL);
-    moving(-40);
-    delay(DELAY_TOOL);
-    moving(100);
     delay(DELAY_WORK);
+    moving(60);
+    delay(DELAY_TOOL);
+    moving(40);
+    delay(DELAY_TOOL);
     moving(-100);
-    delay(DELAY_TOOL);
-    moving(20);
-    delay(DELAY_TOOL);
-    moving(80);
     delay(DELAY_WORK);
-    moving(-80);
+    moving(100);
     delay(DELAY_TOOL);
-    moving(190);
+    moving(-20);
+    delay(DELAY_TOOL);
+    moving(-80);
+    delay(DELAY_WORK);
+    moving(80);
+    delay(DELAY_TOOL);
+    moving(-190);
     delay(DELAY_TOOL);
 
 }
@@ -469,7 +469,7 @@ float IoTSystem::get_humidity() {
 float IoTSystem::get_fluid_level() {
     return this->fluid_level;
 }
-
+/*
 void IoTSystem::setup_reader() {
     SPI.begin(); // Init SPI bus
     for (uint8_t reader = 0; reader < NR_OF_READERS; reader++) {
@@ -581,7 +581,7 @@ void IoTSystem::reader_loop() {
         } //if (mfrc522[reader].PICC_IsNewC
     } //for(uint8_t reader    
 }
-
+*/
 void IoTSystem::publish_data() {
     client.publish("dhbw/team12/value1", String(temperature).c_str(), true); // statt msg true
     client.publish("dhbw/team12/value2", String(humidity).c_str(), true); // statt msg true 
