@@ -63,7 +63,7 @@ void reader_loop() {
             }
 
             if (r_0_check || r_1_check || r_2_check) {        //prüft ob ein reader das richtige Werkzeug hat
-                digitalWrite(G_LED,HIGH);                       // LED, muss noch durch RGB ersetzt werden
+                //digitalWrite(G_LED,HIGH);                       // LED, muss noch durch RGB ersetzt werden
                 lcd.print("Richtiges Tool!");
                 lcd.setCursor(0,1);
                 lcd.print("UID:");
@@ -74,7 +74,7 @@ void reader_loop() {
             }
 
             else {                                            //Ablauf für falsches Werkezug
-                digitalWrite(R_LED,HIGH);                       //LED muss noch durch RGN ersetzt werden
+               // digitalWrite(R_LED,HIGH);                       //LED muss noch durch RGN ersetzt werden
                 lcd.print("Falsches Tool!");
                 lcd.setCursor(0,1);
                 lcd.print("UID:");
@@ -93,8 +93,8 @@ void reader_loop() {
             r_0_check = false;                  //Wird nicht zurückgesetzt... muss nochmal geprüft werden
             r_1_check = false;
             r_2_check = false;
-            digitalWrite(G_LED,LOW);
-            digitalWrite(R_LED,LOW);
+           // digitalWrite(G_LED,LOW);
+            //digitalWrite(R_LED,LOW);
             } //if (mfrc522[reader].PICC_IsNewC
     } //for(uint8_t reader    
 
@@ -133,10 +133,12 @@ void setup_serial() {
 void setup_reader() {
 
     for (uint8_t reader = 0; reader < NR_OF_READERS; reader++) {
+        
         mfrc522[reader].PCD_Init(ssPins[reader], RST_PIN); // Init each MFRC522 card
         Serial.print(F("Reader "));
         Serial.print(reader);
         Serial.print(F(": "));
         mfrc522[reader].PCD_DumpVersionToSerial();
+        delay(200);
     }
 }

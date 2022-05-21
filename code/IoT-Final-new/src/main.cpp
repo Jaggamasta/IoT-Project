@@ -1,17 +1,15 @@
-// Copyright (C) <2022> by ...
+// Copyright (C) <2022> by IoT-Project-Team-12-DHBW-Stuttgart-TWIE19B
 #include <Arduino.h>
 #include "system.h"
 #include "config.h"
 
 IoTSystem iot(SSID, PASS, AUTH);
 
-// value1 = Temperatur, value2 = Humidity, value3 = Fluid Level
-// int value = 0;
 void setup() {
     Serial.begin(115200);
     iot.setup_pins();
     iot.setup_neopixel();
-    iot.setup_reader();
+    //iot.setup_reader();
     iot.setup_lcd();
     iot.setup_sensors();
     iot.setup_wifi();
@@ -20,6 +18,5 @@ void setup() {
 }
 
 void loop() {
-    //iot.loop();
-    iot.sensor_loop();
+    iot.loop();
 }

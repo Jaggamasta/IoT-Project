@@ -1,3 +1,4 @@
+// Copyright (C) <2022> by IoT-Project-Team-12-DHBW-Stuttgart-TWIE19B
 #pragma once
 
 #include <Arduino.h>
@@ -17,9 +18,9 @@
 // ---------------------------- | WiFi credentials | -----------------------------------
 // Set password to "" open networks
 // your network name  
-#define SSID            "home-sweet-home"  // "Eigenes WLAN haben du musst" for hotspot
+#define SSID            "home-sweet-home"       //"ASQ Gastzugang"  "Eigenes WLAN haben du musst" for hotspot, "home-sweet-home"
 // your wifi password   
-#define PASS            "58413072613092673805" // "00000000" for hotspot
+#define PASS            "58413072613092673805"  //"ASQgast!15"       //"00000000" ,   for hotspot, 
 // DHBW MQTT server IP-adress
 #define MQTT_SERVER     "81.169.194.117"
 #define MQTT_PORT       1883
@@ -43,11 +44,11 @@
 
 
 /* ========================== | PIN DEFINITIONS | ====================================== */
-#define TRIG            13 // ultrasonic trigger
-#define ECHO            12 // ultrasonic echo
-#define PUMP            15 // relais & pump
-#define ALARM_LED       16 // red alarm led & piezo
-#define STRIP_PIN       2  // RGB strip pin
+#define TRIG                13 // ultrasonic trigger, white wire
+#define ECHO                12 // ultrasonic echo, black wire
+#define PUMP                15 // relais & pump
+#define ALARM_PIEZO         16 // acoustic piezo alarm
+#define STRIP_PIN           2  // RGB strip pin
 
 // --------------------------- | motor pins | ---------------------------------------------
 #define SPU             2048
@@ -62,13 +63,13 @@
 
 // ----------------------- | rfid readers pins | -------------------------------------------
 #define RST_PIN         4   // reset pin       
-#define SS_1_PIN        7   // SDA pin reader 1        
-#define SS_2_PIN        8   // SDA pin reader 2
-#define SS_3_PIN        9   // SDA pin reader 3
+#define SS_1_PIN        5   // SDA pin reader 1 (0)        
+#define SS_2_PIN        0   // SDA pin reader 2 (1)
+#define SS_3_PIN        14   // SDA pin reader 3 (2)
 
 /**  
-SDA     GPIO 7, 8, 9    
-SCK     GPIO 6
+SDA     GPIO 5, 0, 14    
+SCK     GPIO 18
 MOSI    GPIO 23
 MISO    GPIO 19
 RST     GPIO 4
@@ -107,8 +108,8 @@ GND     GROUND
 #define LCD_ADDR        0x27
 /** 
  * LCD pins
- *      SDA             21
- *      SCL             22
+ *      SDA             21  black wire
+ *      SCL             22  white wire
  * */ 
 
 // -------------------------- | DHT Sensor | -------------------------------------------------
@@ -124,7 +125,7 @@ GND     GROUND
 // -------------------- | NeoPixel RGB strip | ------------------------------------------------
 
 // How many NeoPixels are attached?
-#define NUMPIXELS           20
+#define NUMPIXELS           23
 // Time (in milliseconds) to pause between pixels
 #define RGB_DELAY           5000 
 // definition of the brightness level 0-50
