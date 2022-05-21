@@ -67,6 +67,8 @@
 #define SS_2_PIN        0   // SDA pin reader 2 (1)
 #define SS_3_PIN        14   // SDA pin reader 3 (2)
 
+#define ANGLE_TO_STEP   0.17578125
+
 /**  
 SDA     GPIO 5, 0, 14    
 SCK     GPIO 18
@@ -84,21 +86,21 @@ GND     GROUND
 // -------------------- | reader uid definitions | -----------------------------------------
 
 #define READER_0_UIDS   {\
-    {0xA3, 0x42, 0x68, 0x39},\
-    {0xC3, 0x77, 0x4A, 0x39},\
-    0\
+    {0xD3, 0x61, 0x38, 0x39},\
+    {0x93, 0x35, 0xAC, 0x39},\
+    {0xC6, 0x5F, 0x5F, 0x24}\
 }\
 
 #define READER_1_UIDS   {\
-    {0xE6, 0xBD, 0xC6, 0x24},\
-    0,\
-    0\
+    {0xD3, 0x5E, 0x3D, 0x39},\
+    {0x93, 0xDF, 0x07, 0x39},\
+    {0xC3, 0x57, 0x24, 0x39}\
 }\
 
 #define READER_2_UIDS   {\
-    {0x93, 0x86, 0x9D, 0x39},\
-    0,\
-    0\
+    {0xD3, 0x99, 0x3B, 0x39},\
+    {0x93, 0x24, 0xF4, 0x39},\
+    {0xC6, 0xE2, 0x6F, 0x24}\
 }\
 
 // ------------------------------| LCD | ----------------------------------------------------
@@ -114,7 +116,8 @@ GND     GROUND
 
 // -------------------------- | DHT Sensor | -------------------------------------------------
 
-#define DHT_DATA_PIN    17
+#define DHT_DATA_PIN    17  
+#define MAX_TEMP        28      // max Temperature before before cooling
 
 // ---------------------------- | Blynk | ----------------------------------------------------
 
@@ -132,6 +135,13 @@ GND     GROUND
 #define BRIGHTNESS          30
 
 
-// -------------------- | Sensor Values | ------------------------------------------------------
+// -------------------- | Operation angles | ------------------------------------------------------
 
+#define TOOL1_ANGLE         200
+#define TOOL2_ANGLE         180
+#define TOOL3_ANGLE         160
+
+#define WORKING_ANGLE       105
+#define COOLING_ANGLE       60
+#define IDLE_ANGLE          0
 

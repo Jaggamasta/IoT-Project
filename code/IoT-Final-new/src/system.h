@@ -30,10 +30,12 @@
  * [...]
  */
 typedef enum {
-    IDLE = 0,
-    OPERATING = 1,
-    COOLING = 2,
-    // [...]
+    IDLE,
+    WORKING,
+    COOLING,
+    TOOL1,
+    TOOL2,
+    TOOL3,
 } Operation;
 
 class IoTSystem {
@@ -106,8 +108,8 @@ private:
     /* ============== | Stepper operations | ================ */
 
     // --------------| Motor Angle Function | --------------
-    void setup_speed();
     void moving(int ANGLE);
+    void move_to_op(Operation op);
 
     // --------------- | Motor Programms | ------------------
     void tool_prog_1();
@@ -140,6 +142,7 @@ public:
     void setup_lcd();
     void setup_sensors();
     void setup_reader();
+    void setup_speed();
 
     /* ------------ | Setup NeoPixel RGB Strip | ----------- */
     void setup_neopixel();

@@ -15,6 +15,7 @@ void setup() {
     iot.setup_wifi();
     iot.setup_mqtt();
     iot.setup_blynk();
+    iot.setup_speed();
 }
 
 void loop() {

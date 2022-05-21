@@ -13,9 +13,14 @@
  * 
  */
 void IoTSystem::loop() {
-
-sensor_loop();
-
+    int start = millis();
+    while(millis() - start <= 60000) {
+        sensor_loop();
+    }
+    delay(10000);
+    move_to_op(TOOL1);
+    delay(10000);
+    //reader_loop();
 }
 
 
@@ -26,12 +31,14 @@ void IoTSystem::sensor_loop() {
     If not working, put a switch between 
     relais and pump
     */
-    digitalWrite(PUMP, PULLUP); 
+    //digitalWrite(PUMP, LOW); 
     
     read_dht();
     read_fluid_lvl();
 
-     if (temperature >= 28) { 
+     if (temperature >= MAX_TEMP) { 
+        move_to_op(COOLING);
+        delay(500);
         digitalWrite(PUMP, LOW);
         digitalWrite(ALARM_PIEZO, HIGH);
         pixels.fill(pixels.Color(255, 0, 0), 0, 10);
@@ -42,13 +49,13 @@ void IoTSystem::sensor_loop() {
         pixels.show();
         delay(500);
         digitalWrite(ALARM_PIEZO, LOW);
+        pixels.show(); 
+    } else {
+        move_to_op(WORKING);
         pixels.clear();
         pixels.show();
-    
-    } else {
         digitalWrite(PUMP, HIGH);
         digitalWrite(ALARM_PIEZO, LOW);
-
     }
 
     if (!client.connected()) {
@@ -58,9 +65,9 @@ void IoTSystem::sensor_loop() {
     if(millis() - last_sent >= 2000) {
         lcd.clear();
         lcd.setCursor(0, 0);
-        lcd.print((temperature >= 28) ? "Temp. too HIGH!" : "Temp. Ok");
+        lcd.print((temperature >= MAX_TEMP) ? "Temp. too HIGH!" : "Temp. Ok");
         lcd.setCursor(0, 1);
-        lcd.print((temperature >= 28) ? "Cooling NOW!" : "No need Cooling");
+        lcd.print((temperature >= MAX_TEMP) ? "Cooling NOW!" : "No need Cooling");
         verbose_values();
         publish_data();
         blynk_send_data();
@@ -86,7 +93,9 @@ IoTSystem::IoTSystem(
     client(PubSubClient(esp_client)),
     pixels(Adafruit_NeoPixel(NUMPIXELS, STRIP_PIN, NEO_GRB + NEO_KHZ800)),
     motor(Stepper(SPU, IN1, IN3, IN2, IN4)),
-    ssPins{SS_1_PIN, SS_2_PIN, SS_3_PIN}
+    ssPins{SS_1_PIN, SS_2_PIN, SS_3_PIN},
+    stepper_cur_pos(0),
+    cur_op(Operation::IDLE)
 {
     // "Normal" constructor
     this->temperature = 0;
@@ -204,12 +213,13 @@ void IoTSystem::setup_speed() {
     motor.setSpeed(5);
 }
 
-void IoTSystem::moving(int ANGLE) {
+void IoTSystem::moving(int angle) {
 /*
 Setting up the anlge function
 360 degrees /2048 steps = 0.18 factor per degree
 */
-    motor.step(ANGLE/0.18);    
+    motor.step(angle / ANGLE_TO_STEP);
+    this->stepper_cur_pos = (((this->stepper_cur_pos + angle) % 360) + 360) % 360;
 }
 
 // ----------- | Stepper programs | -------------------------
@@ -225,23 +235,23 @@ Tool selection order  1 -> 2 -> 3
  * 
  *  1.  Wait for Blynk input -> do nothing
  *  2.  clicking tool_prog_1
- *  3.  moving tool1
+ *  3.  mov tool1
  *  4.  rfid tool check -> right tool or not? -> warehouse RGBs tool1 lighten up with 5sec delay
  *  5.  tool status (how often was the tool already been used)
  *  6.  tool rgb G, Y, R
- *  7.  moving to working
+ *  7.  mov to working
  *  8.  move back tool1 -> put down tool 1
  *  9.  move to tool2 
  *  10. rfid tool check -> right tool or not? -> warehouse RGBs tool2 lighten up with 5sec delay
  *  11. tool status (how often was the tool already been used)
  *  12. tool rgb G, Y, R
- *  13. moving to working
+ *  13. mov to working
  *  14. move back tool2 -> put down tool2
  *  15. move to tool3 
  *  16. rfid tool check -> right tool or not? -> warehouse RGBs tool3 lighten up with 5sec delay
  *  11. tool status (how often was the tool already been used)
  *  12. tool rgb G, Y, R
- *  13. moving to working
+ *  13. mov to working
  *  14. move back tool3 -> put down tool3
  *  15. move to pos 0.
  *  16. repeat loop
@@ -330,6 +340,32 @@ Tool selection order   3 -> 1 -> 2
     moving(-190);
     delay(DELAY_TOOL);
 
+}
+
+void IoTSystem::move_to_op(Operation op) {
+    switch (op) {
+        case IDLE:
+            moving(IDLE_ANGLE - stepper_cur_pos);
+            break;
+        case WORKING:
+            moving(WORKING_ANGLE - stepper_cur_pos);
+            break;
+        case COOLING:
+            moving(COOLING_ANGLE - stepper_cur_pos);
+            break;
+        case TOOL1:
+            moving(TOOL1_ANGLE - stepper_cur_pos);
+            break;
+        case TOOL2:
+            moving(TOOL2_ANGLE - stepper_cur_pos);
+            break;
+        case TOOL3:
+            moving(TOOL3_ANGLE - stepper_cur_pos);
+            break;
+        default:
+            moving(IDLE_ANGLE - stepper_cur_pos);
+            break;
+    }
 }
 
 /* =============== | Setup Blynk server with auth | ================== */
