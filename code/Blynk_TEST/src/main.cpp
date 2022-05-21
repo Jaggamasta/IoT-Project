@@ -1,8 +1,10 @@
 #include <Arduino.h>
 
-#define BLYNK_TEMPLATE_ID "TMPLJeVUa6Et"
-#define BLYNK_DEVICE_NAME "LEDTEST"
-#define BLYNK_AUTH_TOKEN "DFbZQESy7dKSIorVBUb2OEVrtjm4AcL-"
+
+
+#define BLYNK_TEMPLATE_ID "TMPLSVGc8NTw"
+#define BLYNK_DEVICE_NAME "IoTProjectTeam12"
+#define BLYNK_AUTH_TOKEN "yJBOd-8062LDX76ddXkBCJUWL5nEZYoH-"
 
 
 // Comment this out to disable prints and save space
@@ -34,7 +36,6 @@ char pass[] = "Passwort123!";
 
 void Blinklicht() {
   int i;
-
   for (i = 0; i < 15; i++)
   {
     digitalWrite(5, HIGH);
