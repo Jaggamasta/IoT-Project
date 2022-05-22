@@ -1,9 +1,8 @@
 // Copyright (C) <2022> by IoT-Project-Team-12-DHBW-Stuttgart-TWIE19B
+
 #include <Arduino.h>
 #include "system.h"
 #include "config.h"
-
-IoTSystem iot(SSID, PASS, AUTH);
 
 void setup() {
     Serial.begin(115200);

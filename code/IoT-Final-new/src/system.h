@@ -1,4 +1,5 @@
 // Copyright (C) <2022> by IoT-Project-Team-12-DHBW-Stuttgart-TWIE19B
+
 #pragma once
 
 #include <Arduino.h>
@@ -21,6 +22,8 @@
 #define READER_0    0
 #define READER_1    1
 #define READER_2    2
+
+
 
 /**
  * Operation area of the system
@@ -113,9 +116,6 @@ private:
     void move_to_op(Operation op);
 
     // --------------- | Motor Programms | ------------------
-    void tool_prog_1();
-    void tool_prog_2();
-    void tool_prog_3();            
 
     /* ----------- | RFID Reader Operations | -------------- */
 
@@ -132,6 +132,9 @@ public:
             char *blynk_auth
     );
     ~IoTSystem() {}
+    void tool_prog_1();
+    void tool_prog_2();
+    void tool_prog_3();            
 
 
 
@@ -156,3 +159,5 @@ public:
     void sensor_loop();
     void loop();
 };
+
+extern IoTSystem iot;

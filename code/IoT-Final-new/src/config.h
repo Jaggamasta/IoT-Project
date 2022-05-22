@@ -1,4 +1,5 @@
 // Copyright (C) <2022> by IoT-Project-Team-12-DHBW-Stuttgart-TWIE19B
+
 #pragma once
 
 #include <Arduino.h>
@@ -67,7 +68,7 @@
 #define SS_2_PIN        0   // SDA pin reader 2 (1)
 #define SS_3_PIN        14   // SDA pin reader 3 (2)
 
-#define ANGLE_TO_STEP   (360.0/4096.0)
+#define ANGLE_TO_STEP   0.0878//90625
 
 /**  
 SDA     GPIO 5, 0, 14    

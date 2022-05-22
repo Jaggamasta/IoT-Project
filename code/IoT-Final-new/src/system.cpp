@@ -1,4 +1,5 @@
 // Copyright (C) <2022> by IoT-Project-Team-12-DHBW-Stuttgart-TWIE19B
+
 #include "system.h"
 #include "WiFiClient.h"
 #include "config.h"
@@ -6,6 +7,9 @@
 #include <BlynkSimpleEsp32.h>
 #include <Stepper.h>
 #include <CheapStepper.h>
+#include <math.h>
+
+IoTSystem iot(SSID, PASS, AUTH);
 
 /**
  * 
@@ -14,41 +18,17 @@
  * 
  */
 void IoTSystem::loop() {
-    // int start = millis();
-    // while(millis() - start <= 60000) {
-    //     sensor_loop();
-    // }
-    // delay(10000);
-    // move_to_op(TOOL1);
-    // delay(10000);
-    //reader_loop();
-    digitalWrite(PUMP, HIGH);
-    while (!is_right_tool(READER_2)) {
-        Serial.println("Wrong tool");
-        lcd.setCursor(0, 0);
-        lcd.print("Wrong tool");
-        //delay(1000);
-        //lcd.clear();
-    }
-    Serial.println("Right tool");
-    lcd.clear();
-    lcd.setCursor(0, 0);
-    lcd.print("Tool found");
-    delay(2000);
-    lcd.clear();
 
+    digitalWrite(PUMP, HIGH);
+    lcd.setCursor(0, 0);
+    lcd.print("Choose");
+    lcd.setCursor(0, 1);
+    lcd.print("Program [1/2/3]");
+    Blynk.run();
 }
 
-
 void IoTSystem::sensor_loop() {
-
-    /*
-    Firt try this PULLUP solutuion. 
-    If not working, put a switch between 
-    relais and pump
-    */
-    //digitalWrite(PUMP, LOW); 
-    
+   
     read_dht();
     read_fluid_lvl();
 
@@ -61,10 +41,10 @@ void IoTSystem::sensor_loop() {
         pixels.fill(pixels.Color(255, 0, 0), 15, 2);
         pixels.fill(pixels.Color(255, 0, 0), 18, 2);
         pixels.fill(pixels.Color(255, 0, 0), 21, 2);
-
         pixels.show();
-        delay(500);
+        delay(800);
         digitalWrite(ALARM_PIEZO, LOW);
+        pixels.clear();
         pixels.show(); 
     } else {
         move_to_op(WORKING);
@@ -73,10 +53,8 @@ void IoTSystem::sensor_loop() {
         digitalWrite(PUMP, HIGH);
         digitalWrite(ALARM_PIEZO, LOW);
     }
-    if (mqtt_enabled) {
-        if (!client.connected()) {
-            reconnect();
-        }
+    if (!client.connected()) {
+        reconnect();
     }
 
     if(millis() - last_sent >= 2000) {
@@ -86,19 +64,13 @@ void IoTSystem::sensor_loop() {
         lcd.setCursor(0, 1);
         lcd.print((temperature >= MAX_TEMP) ? "Cooling NOW!" : "No need Cooling");
         verbose_values();
-        if (mqtt_enabled) {
-            publish_data();
-        }
-        if (blynk_enabled) {
-            blynk_send_data();
-        }
+        publish_data();
+            
+        blynk_send_data();
         last_sent = millis();
     }
-    if (mqtt_enabled) {
-        client.loop();
-    }
-    delay(100);   
-
+    client.loop();
+    delay(100);
 }
 
 IoTSystem::IoTSystem(
@@ -137,6 +109,11 @@ void IoTSystem::setup_wifi() {
     Serial.println();
     Serial.print("Connecting to ");
     Serial.println(this->_ssid);
+    lcd.clear();
+    lcd.setCursor(0,0);
+    lcd.print("Setting up");
+    lcd.setCursor(0,1);
+    lcd.print("WiFi");
 
     WiFi.mode(WIFI_MODE_STA);
     WiFi.begin(this->_ssid, this->_pwd);
@@ -250,7 +227,7 @@ void IoTSystem::setup_speed() {
 }
 
 float IoTSystem::get_angle() {
-    return stepper.getStep() * ANGLE_TO_STEP;
+    return ceil(stepper.getStep() * ANGLE_TO_STEP);
 }
 
 void IoTSystem::update_position(int angle) {
@@ -264,122 +241,155 @@ Setting up the anlge function
 }
 
 // ----------- | Stepper programs | -------------------------
+
 void IoTSystem::tool_prog_1() {
 /* 
 Motor programm 1
-Tool selection order  1 -> 2 -> 3
+Tool selection order  3 -> 2 -> 1
 */
 
-/**
- *  wihtout sensor_loop()
- * 
- * 
- *  1.  Wait for Blynk input -> do nothing
- *  2.  clicking tool_prog_1
- *  3.  mov tool1
- *  4.  rfid tool check -> right tool or not? -> warehouse RGBs tool1 lighten up with 5sec delay
- *  5.  tool status (how often was the tool already been used)
- *  6.  tool rgb G, Y, R
- *  7.  mov to working
- *  8.  move back tool1 -> put down tool 1
- *  9.  move to tool2 
- *  10. rfid tool check -> right tool or not? -> warehouse RGBs tool2 lighten up with 5sec delay
- *  11. tool status (how often was the tool already been used)
- *  12. tool rgb G, Y, R
- *  13. mov to working
- *  14. move back tool2 -> put down tool2
- *  15. move to tool3 
- *  16. rfid tool check -> right tool or not? -> warehouse RGBs tool3 lighten up with 5sec delay
- *  11. tool status (how often was the tool already been used)
- *  12. tool rgb G, Y, R
- *  13. mov to working
- *  14. move back tool3 -> put down tool3
- *  15. move to pos 0.
- *  16. repeat loop
- *  
- * 
- */
+    lcd.clear();
+    move_to_op(TOOL3);
+    while(!is_right_tool(READER_2));
+    delay(1000);
 
+    int start = millis();
+    while (millis() - start <= 10000) {
+        sensor_loop();
+    }
+
+    move_to_op(TOOL3);
+    delay(1000);
+
+    move_to_op(TOOL2);
+    lcd.clear();
+    while(!is_right_tool(READER_1));
+    delay(1000);
+
+    int start_1 = millis();
+    while (millis() - start_1 <= 10000) {
+        sensor_loop();
+    }
     
-    //Motor.step(SPU);
-    update_position(210);    
-    delay(DELAY_TOOL);
-    update_position(-100);
-    delay(DELAY_WORK);
-    update_position(100);
-    delay(DELAY_TOOL);
-    update_position(-20);
-    delay(DELAY_TOOL);
-    update_position(-80);
-    delay(DELAY_WORK);
-    update_position(80);
-    delay(DELAY_TOOL);
-    update_position(-20);
-    delay(DELAY_TOOL);
-    update_position(-60);
-    delay(DELAY_WORK);
-    update_position(60);
-    delay(DELAY_WORK);
-    update_position(-170);
-    delay(DELAY_TOOL);
+    move_to_op(TOOL2);
+    delay(1000);
+
+    move_to_op(TOOL1);
+    lcd.clear();
+    while(!is_right_tool(READER_0));
+    delay(1000);
+
+    int start_2 = millis();
+    while (millis() - start_2 <= 10000) {
+        sensor_loop();
+    }
+
+    move_to_op(TOOL1);
+    delay(1000);
+
+    move_to_op(IDLE);
+    delay(1000);    
+    lcd.clear();
 }
 
 void IoTSystem::tool_prog_2() {
 /* 
 Motor programm 2
-Tool selection order  2 -> 3 -> 1
+Tool selection order  1 -> 2 -> 3
 */
-    //Motor.step(SPU);
-    update_position(190);
-    delay(DELAY_TOOL);
-    //Motor.step(-SPU);
-    update_position(-80);
-    delay(DELAY_WORK);
-    update_position(80);
-    delay(DELAY_TOOL);
-    update_position(-20);
-    delay(DELAY_TOOL);
-    update_position(-60);
-    delay(DELAY_WORK);
-    update_position(60);
-    delay(DELAY_TOOL);
-    update_position(40);
-    delay(DELAY_TOOL);
-    update_position(-100);
-    delay(DELAY_WORK);
-    update_position(100);
-    delay(DELAY_TOOL);
-    update_position(-210);
-    delay(DELAY_TOOL);   
+
+    lcd.clear();
+    move_to_op(TOOL1);
+    while(!is_right_tool(READER_0));
+    delay(1000);
+
+    int start = millis();
+    while (millis() - start <= 100000) {
+        sensor_loop();
+    }
+
+    move_to_op(TOOL1);
+    delay(1000);
+
+    move_to_op(TOOL2);
+    lcd.clear();
+    while(!is_right_tool(READER_1));
+    delay(1000);
+
+    int start_1 = millis();
+    while (millis() - start_1 <= 100000) {
+        sensor_loop();
+    }
+    
+    move_to_op(TOOL2);
+    delay(1000);
+
+    move_to_op(TOOL3);
+    lcd.clear();
+    while(!is_right_tool(READER_2));
+    delay(1000);
+
+    int start_2 = millis();
+    while (millis() - start_2 <= 100000) {
+        sensor_loop();
+    }
+
+    move_to_op(TOOL3);
+    delay(1000);
+
+    move_to_op(IDLE);
+    delay(1000);    
+    lcd.clear();
 }
 
 void IoTSystem::tool_prog_3() {
 /* 
-Motor programm 2
-Tool selection order   3 -> 1 -> 2
+Motor programm 3
+Tool selection order   2 -> 3 -> 1
 */
-    //Motor.step(SPU);
-    update_position(170);
-    delay(DELAY_TOOL);
-    //Motor.step(-SPU);
-    update_position(-60);
-    delay(DELAY_WORK);
-    update_position(60);
-    delay(DELAY_TOOL);
-    update_position(40);
-    delay(DELAY_TOOL);
-    update_position(-100);
-    delay(DELAY_WORK);
-    update_position(100);
-    delay(DELAY_TOOL);
-    update_position(-20);
-    delay(DELAY_TOOL);
-    update_position(-80);
-    delay(DELAY_WORK);
-    update_position(80);
-    delay(DELAY_TOOL);
-    update_position(-190);
-    delay(DELAY_TOOL);
+
+    move_to_op(TOOL2);
+    lcd.clear();
+    while(!is_right_tool(READER_1));
+    delay(1000);
+
+    int start_1 = millis();
+    while (millis() - start_1 <= 100000) {
+        sensor_loop();
+    }
+    
+    move_to_op(TOOL2);
+    delay(1000);
+
+    move_to_op(TOOL3);
+    lcd.clear();
+    while(!is_right_tool(READER_2));
+    delay(1000);
+
+    int start_2 = millis();
+    while (millis() - start_2 <= 100000) {
+        sensor_loop();
+    }
+
+    move_to_op(TOOL3);
+    delay(1000);
+
+    lcd.clear();
+    move_to_op(TOOL1);
+    while(!is_right_tool(READER_0));
+    delay(1000);
+
+    int start = millis();
+    while (millis() - start <= 100000) {
+        sensor_loop();
+    }
+
+    move_to_op(TOOL1);
+    delay(1000);
+
+    move_to_op(IDLE);
+    delay(1000);    
+    lcd.clear();
 
 }
 
@@ -387,24 +397,31 @@ void IoTSystem::move_to_op(Operation op) {
     switch (op) {
         case IDLE:
             update_position(IDLE_ANGLE - stepper_cur_pos);
+            delay(2000);
             break;
         case WORKING:
             update_position(WORKING_ANGLE - stepper_cur_pos);
+            delay(2000);
             break;
         case COOLING:
             update_position(COOLING_ANGLE - stepper_cur_pos);
+            delay(2000);
             break;
         case TOOL1:
             update_position(TOOL1_ANGLE - stepper_cur_pos);
+            delay(2000);
             break;
         case TOOL2:
             update_position(TOOL2_ANGLE - stepper_cur_pos);
+            delay(2000);
             break;
         case TOOL3:
             update_position(TOOL3_ANGLE - stepper_cur_pos);
+            delay(2000);
             break;
         default:
             update_position(IDLE_ANGLE - stepper_cur_pos);
+            delay(2000);
             break;
     }
 }
@@ -418,11 +435,18 @@ void IoTSystem::setup_blynk() {
     if (!wifi_enabled) {
         return;
     }
+    lcd.clear();
+    lcd.setCursor(0,0);
+    lcd.print("Setting up");
+    lcd.setCursor(0,1);
+    lcd.print("Blynk");
     Blynk.begin(AUTH, SSID, PASS, BLYNK_IP, BLYNK_PORT);      
     // Blynk.begin(auth, ssid, pass, IPAdress(192.168.1.100), 8080)
     //timer.setInterval(1000L, myTimerEvent);     
     // setup a unction to be calles every second
     blynk_enabled = true;
+    delay(1000);
+    lcd.clear();
 }
 
 /* ======================= | Sensor setup | =========================== */
@@ -435,6 +459,11 @@ void IoTSystem::setup_mqtt() {
     if (!wifi_enabled){
         return;
     }
+    lcd.clear();
+    lcd.setCursor(0,0);
+    lcd.print("Setting up");
+    lcd.setCursor(0,1);
+    lcd.print("MQTT");
     // MQTT setup code
     String clientId = "ESP8266Client-";
     clientId += String(random(0xffff), HEX);
@@ -442,6 +471,7 @@ void IoTSystem::setup_mqtt() {
     client.connect(clientId.c_str(), "student", "iotproject2§&d");
     //client.setCallback(this->callback);
     mqtt_enabled = true;
+    delay(1000);
 }
 // --------------------- | Reconnect Function | --------------------------
 void IoTSystem::reconnect() {
@@ -564,134 +594,111 @@ void IoTSystem::dump_byte_array(byte *buffer, byte bufferSize) {
 
 bool IoTSystem::is_right_tool(uint8_t reader) {
     bool uid_check[NUM_UIDS] = {false};
+    switch (reader) {
+        case READER_0:
+            pixels.fill(pixels.Color(255, 255, 255), 0, 3);
+            break;
+        case READER_1:
+            pixels.fill(pixels.Color(255, 255, 255), 3, 3);
+            break;
+        case READER_2:
+            pixels.fill(pixels.Color(255, 255, 255), 6, 3);
+            break;
+    }
     if(mfrc522[reader].PICC_IsNewCardPresent() && mfrc522[reader].PICC_ReadCardSerial()) {
         // Serial.print("Card UID: ");
         // dump_byte_array(mfrc522[reader].uid.uidByte, mfrc522[reader].uid.size);
         for (int i = 0; i < NUM_UIDS; ++i) {   
-            //for (int j = 0; j < 4; ++j) {
-                std::array<uint8_t, 4> read_byte;
-                std::move(
-                    std::begin(mfrc522[reader].uid.uidByte),
-                    std::end(mfrc522[reader].uid.uidByte),
-                    read_byte.begin()
-                );
-                std::array<uint8_t, 4> needed_byte;
-                std::move(
-                    std::begin(reader_uids[reader][i]),
-                    std::end(reader_uids[reader][i]),
-                    needed_byte.begin()
-                );
-                if (read_byte == needed_byte) {
-                    uid_check[i] = true;
-                }
-                
-            //}
+            std::array<uint8_t, 4> read_byte;
+            std::move(
+                std::begin(mfrc522[reader].uid.uidByte),
+                std::end(mfrc522[reader].uid.uidByte),
+                read_byte.begin()
+            );
+            std::array<uint8_t, 4> needed_byte;
+            std::move(
+                std::begin(reader_uids[reader][i]),
+                std::end(reader_uids[reader][i]),
+                needed_byte.begin()
+            );
+            if (read_byte == needed_byte) {
+                uid_check[i] = true;
+            }
         }
-        // Serial.print(F("PICC type: "));
-        // MFRC522::PICC_Type piccType = mfrc522[reader].PICC_GetType(mfrc522[reader].uid.sak);
-        // Serial.println(mfrc522[reader].PICC_GetTypeName(piccType));
+
         mfrc522[reader].PICC_HaltA();
         // Stop encryption on PCD
         mfrc522[reader].PCD_StopCrypto1();
         for (int i = 0; i < NUM_UIDS; ++i) {
             if (uid_check[i] == true) {
+                switch (reader) {
+                    case READER_0:
+                        pixels.fill(pixels.Color(0, 255, 0), 15, 2);
+                        break;
+                    case READER_1:
+                        pixels.fill(pixels.Color(0, 255, 0), 18, 2);
+                        break;
+                    case READER_2:
+                        pixels.fill(pixels.Color(0, 255, 0), 21, 2);
+                        break;
+
+                }
+                lcd.clear();
+                lcd.setCursor(0, 0);
+                lcd.printf("Right tool");
+                pixels.show();
+                delay(2000);
+                pixels.clear();
+                pixels.show();
+                lcd.clear();
                 return true;
             }
         }
+        switch (reader) {
+            case READER_0:
+                pixels.fill(pixels.Color(255, 0, 0), 15, 2);
+                break;
+            case READER_1:
+                pixels.fill(pixels.Color(255, 0, 0), 18, 2);
+                break;
+            case READER_2:
+                pixels.fill(pixels.Color(255, 0, 0), 21, 2);
+                break;
+
+        }
+        pixels.show();
+        lcd.clear();
+        lcd.setCursor(0, 0);
+        lcd.printf("Wrong tool");
+        delay(2000);
+        lcd.clear();
         return false;
     } else {
         mfrc522[reader].PICC_HaltA();
         // Stop encryption on PCD
         mfrc522[reader].PCD_StopCrypto1();
+        lcd.setCursor(0, 0);
+        lcd.printf("Waiting for");
+        lcd.setCursor(0, 1);
+        lcd.printf("reader: %d", reader);
+        switch (reader) {
+            case READER_0:
+                pixels.fill(pixels.Color(255, 90, 0), 15, 2);
+                break;
+            case READER_1:
+                pixels.fill(pixels.Color(255, 90, 0), 18, 2);
+                break;
+            case READER_2:
+                pixels.fill(pixels.Color(255, 90, 0), 21, 2);
+                break;
+
+        }
+        pixels.show();
         return false;
-    }
-    
-}
-
-/*
-void IoTSystem::setup_reader() {
-    SPI.begin(); // Init SPI bus
-    for (uint8_t reader = 0; reader < NR_OF_READERS; reader++) {
-        mfrc522[reader].PCD_Init(ssPins[reader], RST_PIN); // Init each MFRC522 card
-        Serial.print(F("Reader "));
-        Serial.print(reader);
-        Serial.print(F(": "));
-        mfrc522[reader].PCD_DumpVersionToSerial();
-    }    
-}
-
-void IoTSystem::dump_byte_array(byte *buffer, byte bufferSize) {
-    
-    for (byte i = 0; i < bufferSize; i++) {
-        Serial.print(buffer[i] < 0x10 ? " 0" : " ");
-        Serial.print(buffer[i], HEX);
-    }
+    } 
 }
 
 
-
-void IoTSystem::reader_loop() {
-
-
-    for (uint8_t reader = 0; reader < NR_OF_READERS; reader++) {
-    // Look for new cards
-
-        if (mfrc522[reader].PICC_IsNewCardPresent() && mfrc522[reader].PICC_ReadCardSerial()) {
-            Serial.print(F("Reader "));
-            Serial.print(reader);
-            // Show some details of the PICC (that is: the tag/card)
-            Serial.print(F(": Card UID:"));
-            dump_byte_array(mfrc522[reader].uid.uidByte, mfrc522[reader].uid.size);
-            Serial.println();
-            Serial.print(F("PICC type: "));
-            MFRC522::PICC_Type piccType = mfrc522[reader].PICC_GetType(mfrc522[reader].uid.sak);
-            Serial.println(mfrc522[reader].PICC_GetTypeName(piccType));
-
-            reader_check[reader] = true;
-            for (int j=0; j<4; j++){
-                if (mfrc522[reader].uid.uidByte[j] != reader_uids[reader][0][j]) {  //Vergleich mit zugewiesen IDs
-                    reader_check[reader] = false;
-                }
-            }
-            
-            if (reader_check[0] || reader_check[1] || reader_check[2]) {        //prüft ob ein reader das richtige Werkzeug hat
-                //digitalWrite(G_LED,HIGH);                       // LED, muss noch durch RGB ersetzt werden
-                lcd.print("Richtiges Tool!");
-                lcd.setCursor(0,1);
-                lcd.print("UID:");
-                for (byte i = 0; i < mfrc522[reader].uid.size; i++) {
-                lcd.print(mfrc522[reader].uid.uidByte[i] < 0x10 ? " 0" : " ");
-                lcd.print(mfrc522[reader].uid.uidByte[i], HEX);
-
-                }
-            }
-
-            else {                                            //Ablauf für falsches Werkezug
-                //digitalWrite(R_LED,HIGH);                       //LED muss noch durch RGN ersetzt werden
-                lcd.print("Falsches Tool!");
-                lcd.setCursor(0,1);
-                lcd.print("UID:");
-                for (byte i = 0; i < mfrc522[reader].uid.size; i++){
-                lcd.print(mfrc522[reader].uid.uidByte[i] < 0x10 ? " 0" : " ");
-                lcd.print(mfrc522[reader].uid.uidByte[i], HEX);
-                }
-            }
-
-            // Halt PICC
-            mfrc522[reader].PICC_HaltA();
-            // Stop encryption on PCD
-            mfrc522[reader].PCD_StopCrypto1();
-            delay(2000);
-            lcd.clear();
-            reader_check[0] = false;                  //Wird nicht zurückgesetzt... muss nochmal geprüft werden
-            reader_check[1] = false;
-            reader_check[2] = false;
-            //digitalWrite(G_LED,LOW);
-            //digitalWrite(R_LED,LOW);
-        } //if (mfrc522[reader].PICC_IsNewC
-    } //for(uint8_t reader    
-}
-*/
 void IoTSystem::publish_data() {
     client.publish("dhbw/team12/value1", String(temperature).c_str(), true); // statt msg true
     client.publish("dhbw/team12/value2", String(humidity).c_str(), true); // statt msg true 
@@ -702,4 +709,22 @@ void IoTSystem::publish_data(float _value1, float _value2, float _value3) {
     client.publish("dhbw/team12/value1", String(_value1).c_str(), true); // statt msg true
     client.publish("dhbw/team12/value2", String(_value2).c_str(), true); // statt msg true 
     client.publish("dhbw/team12/value3", String(_value3).c_str(), true); 
+}
+
+BLYNK_WRITE(V3) {
+    int val = param.asInt();
+    if (val)
+        iot.tool_prog_1(); 
+}
+
+BLYNK_WRITE(V4) {
+    int val = param.asInt();
+    if (val)
+        iot.tool_prog_2(); 
+}
+
+BLYNK_WRITE(V5) {
+    int val = param.asInt();
+    if(val)
+        iot.tool_prog_3(); 
 }
