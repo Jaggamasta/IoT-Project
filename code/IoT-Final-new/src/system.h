@@ -13,13 +13,14 @@
 #include <LiquidCrystal_I2C.h>
 #include <Adafruit_NeoPixel.h>
 #include <Stepper.h>
+#include <CheapStepper.h>
 #include "config.h"
 
 
 
-#define READER_1    0
-#define READER_2    1
-#define READER_3    2
+#define READER_0    0
+#define READER_1    1
+#define READER_2    2
 
 /**
  * Operation area of the system
@@ -37,6 +38,7 @@ typedef enum {
     TOOL2,
     TOOL3,
 } Operation;
+
 
 class IoTSystem {
 private:
@@ -68,19 +70,17 @@ private:
     WiFiClient esp_client;
     PubSubClient client;
     Adafruit_NeoPixel pixels;
-    Stepper motor;
+    //Stepper motor;
+    CheapStepper stepper;
     MFRC522 mfrc522[3];
     byte ssPins[3];
-    uint32_t reader_uids[3][NUM_UIDS][4] = {
-        READER_0_UIDS,  // all rfid tags for reader 0
-        READER_1_UIDS,  // all rfid tags for reader 1
-        READER_2_UIDS   // all rfid tags for reader 2
-    };
+    uint32_t reader_uids[3][NUM_UIDS][4];
     bool reader_check[3];
 
    //BlynkTimer blynk_timer;
     
     int last_sent, lcd_last;
+    bool mqtt_enabled, wifi_enabled, blynk_enabled;
 
     void start_cooling();   // not used yet
     void stop_cooling();    // not used yet
@@ -108,7 +108,8 @@ private:
     /* ============== | Stepper operations | ================ */
 
     // --------------| Motor Angle Function | --------------
-    void moving(int ANGLE);
+    void update_position(int angle);
+    float get_angle();
     void move_to_op(Operation op);
 
     // --------------- | Motor Programms | ------------------

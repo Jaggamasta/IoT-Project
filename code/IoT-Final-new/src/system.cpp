@@ -5,6 +5,7 @@
 #include <Arduino.h>
 #include <BlynkSimpleEsp32.h>
 #include <Stepper.h>
+#include <CheapStepper.h>
 
 /**
  * 
@@ -13,14 +14,29 @@
  * 
  */
 void IoTSystem::loop() {
-    int start = millis();
-    while(millis() - start <= 60000) {
-        sensor_loop();
-    }
-    delay(10000);
-    move_to_op(TOOL1);
-    delay(10000);
+    // int start = millis();
+    // while(millis() - start <= 60000) {
+    //     sensor_loop();
+    // }
+    // delay(10000);
+    // move_to_op(TOOL1);
+    // delay(10000);
     //reader_loop();
+    digitalWrite(PUMP, HIGH);
+    while (!is_right_tool(READER_2)) {
+        Serial.println("Wrong tool");
+        lcd.setCursor(0, 0);
+        lcd.print("Wrong tool");
+        //delay(1000);
+        //lcd.clear();
+    }
+    Serial.println("Right tool");
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("Tool found");
+    delay(2000);
+    lcd.clear();
+
 }
 
 
@@ -57,9 +73,10 @@ void IoTSystem::sensor_loop() {
         digitalWrite(PUMP, HIGH);
         digitalWrite(ALARM_PIEZO, LOW);
     }
-
-    if (!client.connected()) {
-        reconnect();
+    if (mqtt_enabled) {
+        if (!client.connected()) {
+            reconnect();
+        }
     }
 
     if(millis() - last_sent >= 2000) {
@@ -69,12 +86,17 @@ void IoTSystem::sensor_loop() {
         lcd.setCursor(0, 1);
         lcd.print((temperature >= MAX_TEMP) ? "Cooling NOW!" : "No need Cooling");
         verbose_values();
-        publish_data();
-        blynk_send_data();
+        if (mqtt_enabled) {
+            publish_data();
+        }
+        if (blynk_enabled) {
+            blynk_send_data();
+        }
         last_sent = millis();
     }
-
-    client.loop();
+    if (mqtt_enabled) {
+        client.loop();
+    }
     delay(100);   
 
 }
@@ -92,10 +114,12 @@ IoTSystem::IoTSystem(
     esp_client(WiFiClient()),
     client(PubSubClient(esp_client)),
     pixels(Adafruit_NeoPixel(NUMPIXELS, STRIP_PIN, NEO_GRB + NEO_KHZ800)),
-    motor(Stepper(SPU, IN1, IN3, IN2, IN4)),
+    //motor(Stepper(SPU, IN1, IN3, IN2, IN4)),
     ssPins{SS_1_PIN, SS_2_PIN, SS_3_PIN},
     stepper_cur_pos(0),
-    cur_op(Operation::IDLE)
+    cur_op(Operation::IDLE),
+    stepper(CheapStepper(IN1, IN2, IN3, IN4)),
+    reader_uids{READER_0_UIDS, READER_1_UIDS, READER_2_UIDS}
 {
     // "Normal" constructor
     this->temperature = 0;
@@ -125,9 +149,9 @@ void IoTSystem::setup_wifi() {
     Serial.println("WiFi connected");
     Serial.println("IP address: ");
     Serial.println(WiFi.localIP());
+    wifi_enabled = true;
     delay(1000);
 }
-
 /**
  * Setup necessary pins for System
  */
@@ -143,6 +167,7 @@ void IoTSystem::setup_pins() {
  */
 void IoTSystem::setup_lcd() {
     // LCD setup code
+    Wire.begin(I2C_SDA, I2C_SCL);
     lcd.init();         // starting LCD setup  
     lcd.backlight();    // turn on backlight (lcd.noBacklight(); turn off backlight).
 }
@@ -155,6 +180,16 @@ void IoTSystem::setup_neopixel() {
     pixels.show();
     // Setting up  britghness of the Neopixel strip
     pixels.setBrightness(BRIGHTNESS);    
+}
+
+
+void IoTSystem::setup_reader() {
+    SPI.begin(); // Init SPI bus
+    for (uint8_t reader = 0; reader < NR_OF_READERS; reader++) {
+        mfrc522[reader].PCD_Init(ssPins[reader], RST_PIN); // Init each MFRC522 card
+        Serial.printf("Reader [%d]: ", reader);
+        mfrc522[reader].PCD_DumpVersionToSerial();
+    }
 }
 
 void IoTSystem::setup_rgb_lights() {
@@ -210,15 +245,21 @@ void IoTSystem::setup_blinking_rgb() {
 
 /* ================= | STEPPER MOTOR FUNCTIONS | ================= */
 void IoTSystem::setup_speed() {
-    motor.setSpeed(5);
+    stepper.setRpm(10);
+    //motor.setSpeed(5);
 }
 
-void IoTSystem::moving(int angle) {
+float IoTSystem::get_angle() {
+    return stepper.getStep() * ANGLE_TO_STEP;
+}
+
+void IoTSystem::update_position(int angle) {
 /*
 Setting up the anlge function
 360 degrees /2048 steps = 0.18 factor per degree
 */
-    motor.step(angle / ANGLE_TO_STEP);
+    //motor.step(angle / ANGLE_TO_STEP);
+    stepper.moveDegrees((angle < 0) ? false : true, (angle < 0) ? -angle : angle);
     this->stepper_cur_pos = (((this->stepper_cur_pos + angle) % 360) + 360) % 360;
 }
 
@@ -261,25 +302,25 @@ Tool selection order  1 -> 2 -> 3
 
     
     //Motor.step(SPU);
-    moving(210);    
+    update_position(210);    
     delay(DELAY_TOOL);
-    moving(-100);
+    update_position(-100);
     delay(DELAY_WORK);
-    moving(100);
+    update_position(100);
     delay(DELAY_TOOL);
-    moving(-20);
+    update_position(-20);
     delay(DELAY_TOOL);
-    moving(-80);
+    update_position(-80);
     delay(DELAY_WORK);
-    moving(80);
+    update_position(80);
     delay(DELAY_TOOL);
-    moving(-20);
+    update_position(-20);
     delay(DELAY_TOOL);
-    moving(-60);
+    update_position(-60);
     delay(DELAY_WORK);
-    moving(60);
+    update_position(60);
     delay(DELAY_WORK);
-    moving(-170);
+    update_position(-170);
     delay(DELAY_TOOL);
 }
 
@@ -289,26 +330,26 @@ Motor programm 2
 Tool selection order  2 -> 3 -> 1
 */
     //Motor.step(SPU);
-    moving(190);
+    update_position(190);
     delay(DELAY_TOOL);
     //Motor.step(-SPU);
-    moving(-80);
+    update_position(-80);
     delay(DELAY_WORK);
-    moving(80);
+    update_position(80);
     delay(DELAY_TOOL);
-    moving(-20);
+    update_position(-20);
     delay(DELAY_TOOL);
-    moving(-60);
+    update_position(-60);
     delay(DELAY_WORK);
-    moving(60);
+    update_position(60);
     delay(DELAY_TOOL);
-    moving(40);
+    update_position(40);
     delay(DELAY_TOOL);
-    moving(-100);
+    update_position(-100);
     delay(DELAY_WORK);
-    moving(100);
+    update_position(100);
     delay(DELAY_TOOL);
-    moving(-210);
+    update_position(-210);
     delay(DELAY_TOOL);   
 }
 
@@ -318,26 +359,26 @@ Motor programm 2
 Tool selection order   3 -> 1 -> 2
 */
     //Motor.step(SPU);
-    moving(170);
+    update_position(170);
     delay(DELAY_TOOL);
     //Motor.step(-SPU);
-    moving(-60);
+    update_position(-60);
     delay(DELAY_WORK);
-    moving(60);
+    update_position(60);
     delay(DELAY_TOOL);
-    moving(40);
+    update_position(40);
     delay(DELAY_TOOL);
-    moving(-100);
+    update_position(-100);
     delay(DELAY_WORK);
-    moving(100);
+    update_position(100);
     delay(DELAY_TOOL);
-    moving(-20);
+    update_position(-20);
     delay(DELAY_TOOL);
-    moving(-80);
+    update_position(-80);
     delay(DELAY_WORK);
-    moving(80);
+    update_position(80);
     delay(DELAY_TOOL);
-    moving(-190);
+    update_position(-190);
     delay(DELAY_TOOL);
 
 }
@@ -345,25 +386,25 @@ Tool selection order   3 -> 1 -> 2
 void IoTSystem::move_to_op(Operation op) {
     switch (op) {
         case IDLE:
-            moving(IDLE_ANGLE - stepper_cur_pos);
+            update_position(IDLE_ANGLE - stepper_cur_pos);
             break;
         case WORKING:
-            moving(WORKING_ANGLE - stepper_cur_pos);
+            update_position(WORKING_ANGLE - stepper_cur_pos);
             break;
         case COOLING:
-            moving(COOLING_ANGLE - stepper_cur_pos);
+            update_position(COOLING_ANGLE - stepper_cur_pos);
             break;
         case TOOL1:
-            moving(TOOL1_ANGLE - stepper_cur_pos);
+            update_position(TOOL1_ANGLE - stepper_cur_pos);
             break;
         case TOOL2:
-            moving(TOOL2_ANGLE - stepper_cur_pos);
+            update_position(TOOL2_ANGLE - stepper_cur_pos);
             break;
         case TOOL3:
-            moving(TOOL3_ANGLE - stepper_cur_pos);
+            update_position(TOOL3_ANGLE - stepper_cur_pos);
             break;
         default:
-            moving(IDLE_ANGLE - stepper_cur_pos);
+            update_position(IDLE_ANGLE - stepper_cur_pos);
             break;
     }
 }
@@ -374,10 +415,14 @@ void IoTSystem::move_to_op(Operation op) {
  */
 void IoTSystem::setup_blynk() {
     // Blynk setup code
+    if (!wifi_enabled) {
+        return;
+    }
     Blynk.begin(AUTH, SSID, PASS, BLYNK_IP, BLYNK_PORT);      
     // Blynk.begin(auth, ssid, pass, IPAdress(192.168.1.100), 8080)
     //timer.setInterval(1000L, myTimerEvent);     
     // setup a unction to be calles every second
+    blynk_enabled = true;
 }
 
 /* ======================= | Sensor setup | =========================== */
@@ -387,12 +432,16 @@ void IoTSystem::setup_sensors() {
 
 /* ===================== | Setup MQTT server | ========================= */
 void IoTSystem::setup_mqtt() {
+    if (!wifi_enabled){
+        return;
+    }
     // MQTT setup code
     String clientId = "ESP8266Client-";
     clientId += String(random(0xffff), HEX);
     client.setServer(MQTT_SERVER, MQTT_PORT);
     client.connect(clientId.c_str(), "student", "iotproject2§&d");
     //client.setCallback(this->callback);
+    mqtt_enabled = true;
 }
 // --------------------- | Reconnect Function | --------------------------
 void IoTSystem::reconnect() {
@@ -505,6 +554,60 @@ float IoTSystem::get_humidity() {
 float IoTSystem::get_fluid_level() {
     return this->fluid_level;
 }
+
+void IoTSystem::dump_byte_array(byte *buffer, byte bufferSize) {
+    for (byte i = 0; i < bufferSize; i++) {
+        Serial.print(buffer[i] < 0x10 ? " 0" : " ");
+        Serial.print(buffer[i], HEX);
+    }
+}
+
+bool IoTSystem::is_right_tool(uint8_t reader) {
+    bool uid_check[NUM_UIDS] = {false};
+    if(mfrc522[reader].PICC_IsNewCardPresent() && mfrc522[reader].PICC_ReadCardSerial()) {
+        // Serial.print("Card UID: ");
+        // dump_byte_array(mfrc522[reader].uid.uidByte, mfrc522[reader].uid.size);
+        for (int i = 0; i < NUM_UIDS; ++i) {   
+            //for (int j = 0; j < 4; ++j) {
+                std::array<uint8_t, 4> read_byte;
+                std::move(
+                    std::begin(mfrc522[reader].uid.uidByte),
+                    std::end(mfrc522[reader].uid.uidByte),
+                    read_byte.begin()
+                );
+                std::array<uint8_t, 4> needed_byte;
+                std::move(
+                    std::begin(reader_uids[reader][i]),
+                    std::end(reader_uids[reader][i]),
+                    needed_byte.begin()
+                );
+                if (read_byte == needed_byte) {
+                    uid_check[i] = true;
+                }
+                
+            //}
+        }
+        // Serial.print(F("PICC type: "));
+        // MFRC522::PICC_Type piccType = mfrc522[reader].PICC_GetType(mfrc522[reader].uid.sak);
+        // Serial.println(mfrc522[reader].PICC_GetTypeName(piccType));
+        mfrc522[reader].PICC_HaltA();
+        // Stop encryption on PCD
+        mfrc522[reader].PCD_StopCrypto1();
+        for (int i = 0; i < NUM_UIDS; ++i) {
+            if (uid_check[i] == true) {
+                return true;
+            }
+        }
+        return false;
+    } else {
+        mfrc522[reader].PICC_HaltA();
+        // Stop encryption on PCD
+        mfrc522[reader].PCD_StopCrypto1();
+        return false;
+    }
+    
+}
+
 /*
 void IoTSystem::setup_reader() {
     SPI.begin(); // Init SPI bus
@@ -525,35 +628,6 @@ void IoTSystem::dump_byte_array(byte *buffer, byte bufferSize) {
     }
 }
 
-
-bool IoTSystem::is_right_tool(uint8_t reader) {
-    bool uid_check[NUM_UIDS];
-    for (int i = 0; i < NUM_UIDS; ++i) {
-        uid_check[i] = true;
-    }
-    if(mfrc522[reader].PICC_IsNewCardPresent() && mfrc522[reader].PICC_ReadCardSerial()) {
-        for (int i = 0; i < NUM_UIDS; ++i) {   
-            for (int j = 0; j < 4; ++j) {
-                if(mfrc522[reader].uid.uidByte[j] != reader_uids[reader][i][j]) {
-                    uid_check[i] = false;
-                }
-            }
-        }
-    }
-    
-    // Halt PICC
-    mfrc522[reader].PICC_HaltA();
-    // Stop encryption on PCD
-    mfrc522[reader].PCD_StopCrypto1();
-
-    for (int i = 0; i < NUM_UIDS; ++i) {
-        if (uid_check[i] == true) {
-            return true;
-        }
-    }
-    return false;
-
-}
 
 
 void IoTSystem::reader_loop() {

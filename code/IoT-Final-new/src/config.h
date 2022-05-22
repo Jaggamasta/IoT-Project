@@ -67,7 +67,7 @@
 #define SS_2_PIN        0   // SDA pin reader 2 (1)
 #define SS_3_PIN        14   // SDA pin reader 3 (2)
 
-#define ANGLE_TO_STEP   0.17578125
+#define ANGLE_TO_STEP   (360.0/4096.0)
 
 /**  
 SDA     GPIO 5, 0, 14    
@@ -113,6 +113,9 @@ GND     GROUND
  *      SDA             21  black wire
  *      SCL             22  white wire
  * */ 
+
+#define I2C_SDA         21
+#define I2C_SCL         27
 
 // -------------------------- | DHT Sensor | -------------------------------------------------
 
