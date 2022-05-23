@@ -34,6 +34,7 @@ void IoTSystem::sensor_loop() {
 
      if (temperature >= MAX_TEMP) { 
         move_to_op(COOLING);
+        //bot.sendMessage(CHAT_ID, "Temperature too HIGH! Cooling now!");
         delay(500);
         digitalWrite(PUMP, LOW);
         digitalWrite(ALARM_PIEZO, HIGH);
@@ -92,6 +93,7 @@ IoTSystem::IoTSystem(
     cur_op(Operation::IDLE),
     stepper(CheapStepper(IN1, IN2, IN3, IN4)),
     reader_uids{READER_0_UIDS, READER_1_UIDS, READER_2_UIDS}
+    //bot(UniversalTelegramBot(BOTtoken, secure_client))
 {
     // "Normal" constructor
     this->temperature = 0;
@@ -107,14 +109,13 @@ void IoTSystem::setup_wifi() {
     delay(10);
     // We start by connecting to a WiFi network
     Serial.println();
-    Serial.print("Connecting to ");
+    Serial.print("Connecting to "); 
     Serial.println(this->_ssid);
     lcd.clear();
     lcd.setCursor(0,0);
     lcd.print("Setting up");
     lcd.setCursor(0,1);
     lcd.print("WiFi");
-
     WiFi.mode(WIFI_MODE_STA);
     WiFi.begin(this->_ssid, this->_pwd);
 
@@ -126,6 +127,7 @@ void IoTSystem::setup_wifi() {
     Serial.println("WiFi connected");
     Serial.println("IP address: ");
     Serial.println(WiFi.localIP());
+    //secure_client.setCACert(TELEGRAM_CERTIFICATE_ROOT);
     wifi_enabled = true;
     delay(1000);
 }

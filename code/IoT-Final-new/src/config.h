@@ -5,12 +5,13 @@
 #include <Arduino.h>
 #include <WiFi.h>
 #include <PubSubClient.h>
+#include <UniversalTelegramBot.h>
+#include <ArduinoJson.h>
 #include <DHT.h>
 #include <Wire.h>
 #include <SPI.h>
 #include <Adafruit_Sensor.h>
 #include <WiFiClient.h>
-//#include <BlynkSimpleEsp32.h>
 #include <LiquidCrystal_I2C.h>
 #include <Adafruit_NeoPixel.h>
 #include <MFRC522.h>
@@ -26,7 +27,7 @@
 #define MQTT_SERVER     "81.169.194.117"
 #define MQTT_PORT       1883
 
-// -------------------------------- | BLYNK | ------------------------------------------
+// -------------------------------- | BLYNK | ---------------------------------
 
 // Comment this out to disable prints and save space
 #define BLYNK_PRINT             Serial
@@ -39,19 +40,21 @@
 // blynk auth token from the blynk app    
 #define AUTH                    BLYNK_AUTH_TOKEN          
 
-//#define BLYNK_TEMPLATE_ID "TMPLyAyPxcki"                      // ID from Davids blynk project
-//#define BLYNK_DEVICE_NAME "Template01"                        // Name from Davids blynk project
-//#define BLYNK_AUTH_TOKEN "OWErakJ76NEjc2APznUTV3FPQEjEx-OC"   // Token from Davis blynk project
+// ------------------------------ | Telegram | --------------------------------
+
+// initialize Telegram Bot
+#define BOTtoken        "5217236577:AAF_tEIDyY3zLMFPvOdvb-YKQA4gsz-ARZU"
+#define CHAT_ID         "1504193327"
 
 
-/* ========================== | PIN DEFINITIONS | ====================================== */
+/* ========================== | PIN DEFINITIONS | ========================== */
 #define TRIG                13 // ultrasonic trigger, white wire
 #define ECHO                12 // ultrasonic echo, black wire
 #define PUMP                15 // relais & pump
 #define ALARM_PIEZO         16 // acoustic piezo alarm
 #define STRIP_PIN           2  // RGB strip pin
 
-// --------------------------- | motor pins | ---------------------------------------------
+// --------------------------- | motor pins | ---------------------------------
 #define SPU             2048
 #define IN1             32
 #define IN2             33

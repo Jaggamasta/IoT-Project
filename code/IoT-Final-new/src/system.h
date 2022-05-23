@@ -10,12 +10,14 @@
 #include <SPI.h>
 #include <Adafruit_Sensor.h>
 #include <WiFiClient.h>
-//#include <BlynkSimpleEsp32.h>
 #include <LiquidCrystal_I2C.h>
 #include <Adafruit_NeoPixel.h>
 #include <Stepper.h>
 #include <CheapStepper.h>
 #include "config.h"
+//#include <WiFiClientSecure.h>
+//#include <UniversalTelegramBot.h>
+//#include <ArduinoJson.h>
 
 
 
@@ -71,6 +73,7 @@ private:
     LiquidCrystal_I2C lcd;
     DHT dht;
     WiFiClient esp_client;
+    //WiFiClientSecure secure_client;
     PubSubClient client;
     Adafruit_NeoPixel pixels;
     //Stepper motor;
@@ -79,8 +82,8 @@ private:
     byte ssPins[3];
     uint32_t reader_uids[3][NUM_UIDS][4];
     bool reader_check[3];
-
-   //BlynkTimer blynk_timer;
+    //UniversalTelegramBot bot;
+    //BlynkTimer blynk_timer;
     
     int last_sent, lcd_last;
     bool mqtt_enabled, wifi_enabled, blynk_enabled;
@@ -91,8 +94,8 @@ private:
     void read_dht();
     void read_fluid_lvl();
     void verbose_values();
-    //void stepper_move_angle(float angle);
 
+    //void stepper_move_angle(float angle);             
 
     /*----------------------| Getter |-----------------------*/
     String get_ssid();
