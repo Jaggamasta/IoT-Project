@@ -13,7 +13,9 @@ Mit besten Grüßen
 
 Team 12
 
-### §§§§§§§§§§§
+
+
+### § RULES §
 
 Hier ein Paar Regeln dazu, wie diese Ordnerstruktur genutzt werden 
 soll.
@@ -37,15 +39,6 @@ hier machen wir alles möglich an technischer Dokumentation wie bspw.
 Datenblätter etc. rein. So haben wir alles an einem gemeinsamen Ort 
 und haben bei Bedarf den Zugriff auf wichtige Daten zu den jeweiligen 
 Bauteilen.
-
-### Ordner testing
-
-Hier werden die Tests dokumentiert, nachdem das gesamte System 
-fertiggestellt ist. Komplikationen, Bugs und sonstige Schiwierig-
-keiten werden hier dokumentiert. (Bsp. Ansteuerung Pumpe. 
-Statt ESP32 Stromkreis, sollte ein separater Stromkreis verwendet 
-werden, da sonst die anderen nicht ausreichend Strom bekommen und
-nicht mehr korrekt funktionieren)
 
 ### Ordner impressions
 

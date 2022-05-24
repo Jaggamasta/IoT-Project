@@ -1,14 +1,13 @@
 // Copyright (C) <2022> by IoT-Project-Team-12-DHBW-Stuttgart-TWIE19B
-
+// including all the necessary libraries for the project
 #include "system.h"
 #include "WiFiClient.h"
 #include "config.h"
 #include <Arduino.h>
 #include <BlynkSimpleEsp32.h>
-#include <Stepper.h>
 #include <CheapStepper.h>
-#include <math.h>
 
+// creating new object `iot`  from IoTSystem class
 IoTSystem iot(SSID, PASS, AUTH);
 
 /**
@@ -27,6 +26,7 @@ void IoTSystem::loop() {
     Blynk.run();
 }
 
+/* -- | this is the loop for handling the overheat and sending sensor data | -- */ 
 void IoTSystem::sensor_loop() {
    
     read_dht();
@@ -74,11 +74,12 @@ void IoTSystem::sensor_loop() {
     delay(100);
 }
 
+/* =================== | creating the IoTSystem class | ==================== */
 IoTSystem::IoTSystem(
     char *_ssid,
     char *_pwd,
     char *_blynk_auth
-) :
+) : 
     _ssid(_ssid),
     _pwd(_pwd),
     _blynk_auth((char *) _blynk_auth),
@@ -95,7 +96,7 @@ IoTSystem::IoTSystem(
     reader_uids{READER_0_UIDS, READER_1_UIDS, READER_2_UIDS}
     //bot(UniversalTelegramBot(BOTtoken, secure_client))
 {
-    // "Normal" constructor
+    // "Normal" constructor, setting first values
     this->temperature = 0;
     this-> humidity = 0;
     this->fluid_level = 0;
@@ -161,7 +162,7 @@ void IoTSystem::setup_neopixel() {
     pixels.setBrightness(BRIGHTNESS);    
 }
 
-
+/* --------------- | setting up rfid readers | -------------- */
 void IoTSystem::setup_reader() {
     SPI.begin(); // Init SPI bus
     for (uint8_t reader = 0; reader < NR_OF_READERS; reader++) {
@@ -171,63 +172,12 @@ void IoTSystem::setup_reader() {
     }
 }
 
-void IoTSystem::setup_rgb_lights() {
-    // --------- | Set All Pixel Colors to 'OFF'| --------------- 
-    pixels.clear();
-
-    // ------------ | Tool Warehouse Lights | -------------------
-    pixels.setPixelColor(0, pixels.Color(155, 155, 155));
-    pixels.fill(pixels.Color(155, 0, 155), 1, 3);
-    pixels.fill(pixels.Color(0, 0, 155), 4, 3);
-    pixels.fill(pixels.Color(155, 155, 0), 7, 3);
-    pixels.show();
-
-    // ------------- | RFID Reader Lights | -------------------------
-    pixels.setPixelColor(14, pixels.Color(0, 155, 0));
-    pixels.setPixelColor(16, pixels.Color(0, 155, 0));
-    pixels.setPixelColor(18, pixels.Color(0, 155, 0));
-    pixels.show();
-    delay(RGB_DELAY); 
-    pixels.setPixelColor(14, pixels.Color(155, 64, 10));
-    pixels.setPixelColor(16, pixels.Color(155, 64, 10));
-    pixels.setPixelColor(18, pixels.Color(155, 64, 10));
-    pixels.show();
-    delay(RGB_DELAY);
-    pixels.setPixelColor(14, pixels.Color(155, 0, 0));
-    pixels.setPixelColor(16, pixels.Color(155, 0, 0));
-    pixels.setPixelColor(18, pixels.Color(155, 0, 0));
-    pixels.show();
-    delay(RGB_DELAY);
-    
-// ---------------- | Turning OFF All Lights | ----------------------
-    pixels.clear();
-    pixels.show();
-    delay(RGB_DELAY);
-}
-
-void IoTSystem::setup_blinking_rgb() {
-
-    // --------- | truning ON all lights in red | ------
-    pixels.fill(pixels.Color(255, 0, 0), 0, 10);
-    pixels.setPixelColor(14, pixels.Color(255, 0, 0));
-    pixels.setPixelColor(16, pixels.Color(255, 0, 0));
-    pixels.setPixelColor(18, pixels.Color(255, 0, 0));
-    pixels.show();
-    delay(500);
-    
-    // ------------ |turnig off all lights| ------------
-    pixels.clear();
-    pixels.show();
-    delay(500); 
-
-}
-
 /* ================= | STEPPER MOTOR FUNCTIONS | ================= */
 void IoTSystem::setup_speed() {
     stepper.setRpm(10);
     //motor.setSpeed(5);
 }
-
+/* ------------------- | angle setup function | ----------------   */
 float IoTSystem::get_angle() {
     return ceil(stepper.getStep() * ANGLE_TO_STEP);
 }
@@ -235,7 +185,7 @@ float IoTSystem::get_angle() {
 void IoTSystem::update_position(int angle) {
 /*
 Setting up the anlge function
-360 degrees /2048 steps = 0.18 factor per degree
+360 degrees /4096 steps = 0.08.... factor per degree
 */
     //motor.step(angle / ANGLE_TO_STEP);
     stepper.moveDegrees((angle < 0) ? false : true, (angle < 0) ? -angle : angle);
@@ -394,7 +344,7 @@ Tool selection order   2 -> 3 -> 1
     lcd.clear();
 
 }
-
+/* -------------- | move to specified area | ----------------- */
 void IoTSystem::move_to_op(Operation op) {
     switch (op) {
         case IDLE:
@@ -426,6 +376,7 @@ void IoTSystem::move_to_op(Operation op) {
             delay(2000);
             break;
     }
+    this->cur_op = op;
 }
 
 /* =============== | Setup Blynk server with auth | ================== */
@@ -500,7 +451,7 @@ void IoTSystem::reconnect() {
   }
 }
 
-/* ==================== | Reading Seonor Data | ====================== */
+/* ==================== | Reading Sensor Data | ====================== */
 
 // -------------------- | Temperature sensor | ---------------------------
 void IoTSystem::read_dht() {
@@ -528,7 +479,7 @@ void IoTSystem::read_fluid_lvl() {
     this->fluid_level = 2 * h;  // distance in %, 0-100 %
 
 }
-
+/* ------------- | printing values in serial monitor | ---------------- */
 void IoTSystem::verbose_values() {
     Serial.printf(
         "Temperature: %2.2f °C | "
@@ -539,7 +490,7 @@ void IoTSystem::verbose_values() {
         fluid_level
     );
 }
-
+/* -------------- | sending data to the blynk cloud | ----------------- */
 void IoTSystem::blynk_send_data() {
     Blynk.virtualWrite(V0, temperature);
     Blynk.virtualWrite(V1, humidity);
@@ -587,13 +538,14 @@ float IoTSystem::get_fluid_level() {
     return this->fluid_level;
 }
 
+/* -------------------- | reading out rfid uid tag values | ---------------- */
 void IoTSystem::dump_byte_array(byte *buffer, byte bufferSize) {
     for (byte i = 0; i < bufferSize; i++) {
         Serial.print(buffer[i] < 0x10 ? " 0" : " ");
         Serial.print(buffer[i], HEX);
     }
 }
-
+/* ------------------------ | tool checking function | ---------------------- */
 bool IoTSystem::is_right_tool(uint8_t reader) {
     bool uid_check[NUM_UIDS] = {false};
     switch (reader) {
@@ -610,6 +562,7 @@ bool IoTSystem::is_right_tool(uint8_t reader) {
     if(mfrc522[reader].PICC_IsNewCardPresent() && mfrc522[reader].PICC_ReadCardSerial()) {
         // Serial.print("Card UID: ");
         // dump_byte_array(mfrc522[reader].uid.uidByte, mfrc522[reader].uid.size);
+        // std::array is a container that encapsulates fixed size arrays. 
         for (int i = 0; i < NUM_UIDS; ++i) {   
             std::array<uint8_t, 4> read_byte;
             std::move(
@@ -627,7 +580,7 @@ bool IoTSystem::is_right_tool(uint8_t reader) {
                 uid_check[i] = true;
             }
         }
-
+        // picking right warehouse rgb lights for each reader 
         mfrc522[reader].PICC_HaltA();
         // Stop encryption on PCD
         mfrc522[reader].PCD_StopCrypto1();
@@ -700,19 +653,19 @@ bool IoTSystem::is_right_tool(uint8_t reader) {
     } 
 }
 
-
+/* ---------------------- | publishing data via mqtt | --------------------- */
 void IoTSystem::publish_data() {
-    client.publish("dhbw/team12/value1", String(temperature).c_str(), true); // statt msg true
-    client.publish("dhbw/team12/value2", String(humidity).c_str(), true); // statt msg true 
+    client.publish("dhbw/team12/value1", String(temperature).c_str(), true);
+    client.publish("dhbw/team12/value2", String(humidity).c_str(), true);
     client.publish("dhbw/team12/value3", String(fluid_level).c_str(), true);
 }
 
 void IoTSystem::publish_data(float _value1, float _value2, float _value3) {
-    client.publish("dhbw/team12/value1", String(_value1).c_str(), true); // statt msg true
-    client.publish("dhbw/team12/value2", String(_value2).c_str(), true); // statt msg true 
+    client.publish("dhbw/team12/value1", String(_value1).c_str(), true);
+    client.publish("dhbw/team12/value2", String(_value2).c_str(), true);
     client.publish("dhbw/team12/value3", String(_value3).c_str(), true); 
 }
-
+/* ------ | implementation of virtual pins for program selection | ---------- */
 BLYNK_WRITE(V3) {
     int val = param.asInt();
     if (val)

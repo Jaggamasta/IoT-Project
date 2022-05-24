@@ -1,7 +1,7 @@
 // Copyright (C) <2022> by IoT-Project-Team-12-DHBW-Stuttgart-TWIE19B
 
-#pragma once
-
+#pragma once  // referring included libraries once, preventing multiple declarations
+// including all the necessary libraries for the project
 #include <Arduino.h>
 #include <WiFi.h>
 #include <PubSubClient.h>
@@ -55,7 +55,7 @@
 #define STRIP_PIN           2  // RGB strip pin
 
 // --------------------------- | motor pins | ---------------------------------
-#define SPU             2048
+#define SPU             2048    // not used in out code
 #define IN1             32
 #define IN2             33
 #define IN3             25
@@ -71,7 +71,7 @@
 #define SS_2_PIN        0   // SDA pin reader 2 (1)
 #define SS_3_PIN        14   // SDA pin reader 3 (2)
 
-#define ANGLE_TO_STEP   0.0878//90625
+#define ANGLE_TO_STEP   0.0878//90625, 4096 Steps: 360 degrees
 
 /**  
 SDA     GPIO 5, 0, 14    

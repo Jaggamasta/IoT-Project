@@ -1,6 +1,7 @@
 // Copyright (C) <2022> by IoT-Project-Team-12-DHBW-Stuttgart-TWIE19B
 
-#pragma once
+#pragma once // referring included libraries once, preventing multiple declarations
+// including all the necessary libraries for the project
 
 #include <Arduino.h>
 #include <WiFi.h>
@@ -28,12 +29,12 @@
 
 
 /**
- * Operation area of the system
+ * Operation areas of the system
  *
- * `IDLE` - System is on hold
- * `OPERATING` - System is in the working area
- * `COOLING` - System is in the cooling state
- * [...]
+ * `IDLE`           -        System is on hold or 0 position
+ * `OPERATING`      -        System is in the working area
+ * `COOLING`        -        System is in the cooling state
+ * `TOOl1 - TOOl3`  -        System is in the Tool container 1-3 
  */
 typedef enum {
     IDLE,
@@ -44,7 +45,7 @@ typedef enum {
     TOOL3,
 } Operation;
 
-
+/* ======= | declaration of the IoTSystem class | ====== */
 class IoTSystem {
 private:
     /* WiFi network SSID */
@@ -69,7 +70,7 @@ private:
 
     /* Cooling fluid level */
     float fluid_level;
-
+    /* required objects of the system */
     LiquidCrystal_I2C lcd;
     DHT dht;
     WiFiClient esp_client;
@@ -81,21 +82,23 @@ private:
     MFRC522 mfrc522[3];
     byte ssPins[3];
     uint32_t reader_uids[3][NUM_UIDS][4];
-    bool reader_check[3];
+    
+    bool reader_check[3]; // not used in this code
     //UniversalTelegramBot bot;
     //BlynkTimer blynk_timer;
     
-    int last_sent, lcd_last;
+    /* variables used for sending data */ 
+    int last_sent, lcd_last; // 
+    /*  
+        variables usesd to enable/disable wifi,
+         mqtt and blnyk connections
+    */
     bool mqtt_enabled, wifi_enabled, blynk_enabled;
 
-    void start_cooling();   // not used yet
-    void stop_cooling();    // not used yet
-
+    /* functions for reading of the main values */
     void read_dht();
     void read_fluid_lvl();
     void verbose_values();
-
-    //void stepper_move_angle(float angle);             
 
     /*----------------------| Getter |-----------------------*/
     String get_ssid();
@@ -109,7 +112,6 @@ private:
     void publish_data(float value1, float value2, float value3);
     void reconnect();
     void blynk_send_data();
-    //void callback(char* topic, byte* payload, unsigned int length);
 
     /* ============== | Stepper operations | ================ */
 
@@ -118,11 +120,9 @@ private:
     float get_angle();
     void move_to_op(Operation op);
 
-    // --------------- | Motor Programms | ------------------
-
     /* ----------- | RFID Reader Operations | -------------- */
 
-    void dump_byte_array(byte *buffer, byte bufferSize);
+    void dump_byte_array(byte *buffer, byte bufferSize); // not used in this code
     void reader_loop(); 
     bool is_right_tool(uint8_t reader);
 
@@ -135,10 +135,12 @@ public:
             char *blynk_auth
     );
     ~IoTSystem() {}
+    // --------------- | Motor Programms | ------------------
+
+    /* functions for each of the system programs */
     void tool_prog_1();
     void tool_prog_2();
     void tool_prog_3();            
-
 
 
     /*-----------------| Setup procedures |------------------*/
@@ -162,5 +164,7 @@ public:
     void sensor_loop();
     void loop();
 };
-
+/* 
+is necessary to reach the class IoTSystem from the main.cpp
+*/
 extern IoTSystem iot;
